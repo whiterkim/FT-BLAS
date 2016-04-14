@@ -24,7 +24,7 @@ struct timespec begin, end;
  *      y:    matrix containing float values 
  *      incy: increment of y
 **/
-void zdotu(const int n, double complex *x, const int incx, double complex *y, const int incy) { 
+void zdotu(const int n, double complex *x, const int incx, double complex *y, const int incy) {
 
 	if (n <= 0) {
 		return;
@@ -36,7 +36,6 @@ void zdotu(const int n, double complex *x, const int incx, double complex *y, co
 		for (i = 0; i < n; i++) {
 			ctemp = creal(ctemp) + creal(x[i]*y[i]) + (cimag(ctemp) + cimag(x[i]*y[i]))*I;
 		}
-
 	} else {
 		ix = 1;
 		iy = 1;
@@ -51,7 +50,6 @@ void zdotu(const int n, double complex *x, const int incx, double complex *y, co
 			iy += incy;
 		}
 	}
-
 	// Final result assigned to ctemp
 	//printf("zdotu Result: %i + %i*i\n",creal(ctemp),cimag(ctemp));
 }

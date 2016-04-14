@@ -25,7 +25,7 @@ struct timespec begin, end;
  *		incy: increment of y
 **/
 void cdotc(const int n, float complex *x, const int incx, float complex *y, const int incy) { 
-	
+
 	if (n <= 0) {
 		return;
 	}
@@ -37,7 +37,6 @@ void cdotc(const int n, float complex *x, const int incx, float complex *y, cons
 		for (i = 0; i < n; i++) {
 			ctemp = crealf(ctemp) + crealf(conjf(x[i])*y[i]) + (cimagf(ctemp) + cimagf(conjf(x[i])*y[i]))*I;
 		}
-
 	} else {
 		ix = 1;
 		iy = 1;
@@ -52,7 +51,6 @@ void cdotc(const int n, float complex *x, const int incx, float complex *y, cons
 			iy += incy;
 		}
 	}
-
 	// Final result assigned to ctemp
 	//printf("cdotc Result: %i + %i*i\n",crealf(ctemp),cimagf(ctemp));
 }

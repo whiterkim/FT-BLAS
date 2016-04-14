@@ -32,13 +32,12 @@ void cdotu(const int n, float complex *x, const int incx, float complex *y, cons
 
 	int ix, iy;
 	float complex ctemp = 0 + 0*I;
-	float complex cdotu = 0 + 0*I;;
+	float complex cdotu = 0 + 0*I;
 	if (incx == 1 && incy == 1) {
 		int i;
 		for (i = 0; i < n; i++) {
 			ctemp = crealf(ctemp) + crealf(x[i]*y[i]) + (cimagf(ctemp) + cimagf(x[i]*y[i]))*I;
 		}
-
 	} else {
 		ix = 1;
 		iy = 1;
@@ -53,7 +52,6 @@ void cdotu(const int n, float complex *x, const int incx, float complex *y, cons
 			iy += incy;
 		}
 	}
-
 	// Final result assigned to ctemp
 	//printf("cdotu Result: %i + %i*i\n",crealf(ctemp),cimagf(ctemp));
 }

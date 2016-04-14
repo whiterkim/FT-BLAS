@@ -25,7 +25,7 @@ struct timespec begin, end;
  *		incy: increment of y
 **/
 void zdotc(const int n, double complex *x, const int incx, double complex *y, const int incy) { 
-	
+
 	if (n <= 0) {
 		return;
 	}
@@ -36,7 +36,6 @@ void zdotc(const int n, double complex *x, const int incx, double complex *y, co
 		for (i = 0; i < n; i++) {
 			ctemp = creal(ctemp) + creal(conj(x[i])*y[i]) + (cimag(ctemp) + cimag(conj(x[i])*y[i]))*I;
 		}
-
 	} else {
 		ix = 1;
 		iy = 1;
@@ -51,7 +50,6 @@ void zdotc(const int n, double complex *x, const int incx, double complex *y, co
 			iy += incy;
 		}
 	}
-
 	// Final result assigned to ctemp
 	//printf("zdotc Result: %i + %i*i\n",creal(ctemp),cimag(ctemp));
 }
