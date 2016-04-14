@@ -15,17 +15,17 @@ struct timespec begin, end;
 
 /* Z: Complex*16 version 
  * Function: zdotu
- * 		This function is the complex*16(Z) version of xDotu. It performs the task of doing a dot product of 
- * 		the values from matrix X(transpose) to the Y.
+ *      This function is the complex*16(Z) version of xDotu. It performs the task of doing a dot product of 
+ *      the values from matrix X(transpose) to the Y.
  * Parameters:
- * 		n:    dimensions
- *		x:    matrix containing float values
- *		incx: increment of x
- *		y:    matrix containing float values 
- *		incy: increment of y
+ *      n:    dimensions
+ *      x:    matrix containing float values
+ *      incx: increment of x
+ *      y:    matrix containing float values 
+ *      incy: increment of y
 **/
 void zdotu(const int n, double complex *x, const int incx, double complex *y, const int incy) { 
-	
+
 	if (n <= 0) {
 		return;
 	}
@@ -63,23 +63,22 @@ int main(int argc, char* argv[]) {
 	double complex *Y = (double complex *)malloc(sizeof(double complex *)*N);
 	int incx = 1;
 	int incy = 1;
-    
-    // Generate random numbers for matrices
-    srand(time(NULL));
-    int i;
-    for (i = 0; i < N; i++)
-    {
-        X[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;
-        Y[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;;
-    }
 
-    unsigned long long int t1;
+	// Generate random numbers for matrices
+	srand(time(NULL));
+	int i;
+	for (i = 0; i < N; i++){
+		X[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;
+		Y[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;;
+	}
 
-    // Capture start time
-    clock_gettime(CLOCK_MONOTONIC, &begin);
+	unsigned long long int t1;
+
+	// Capture start time
+	clock_gettime(CLOCK_MONOTONIC, &begin);
 
 	zdotu(N,X,incx,Y,incy);
-
+	
 	// Capture end time
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	t1 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;

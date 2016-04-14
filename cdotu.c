@@ -65,21 +65,20 @@ int main(int argc, char* argv[]) {
 	float complex *Y = (float complex *)malloc(sizeof(float complex *)*N);
 	int incx = 1;
 	int incy = 1;
-    
-    // Generate random numbers for matrices
-    srand(time(NULL));
-    int i;
-    for (i = 0; i < N; i++)
-    {
-        X[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;
-        Y[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;;
-    }
 
-    unsigned long long int t1;
+	// Generate random numbers for matrices
+	srand(time(NULL));
+	int i;
+	for (i = 0; i < N; i++){
+	    X[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;
+	    Y[i] = rand()/1.0/RAND_MAX - 0.5 + (rand()/1.0/RAND_MAX - 0.5)*I;;
+	}
 
-    // Capture start time
-    clock_gettime(CLOCK_MONOTONIC, &begin);
+	unsigned long long int t1;
 
+	// Capture start time
+	clock_gettime(CLOCK_MONOTONIC, &begin);
+	
 	cdotu(N,X,incx,Y,incy);
 
 	// Capture end time
