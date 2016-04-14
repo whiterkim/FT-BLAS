@@ -22,7 +22,7 @@ struct timespec begin, end;
  *      x:    matrix containing float values
  *      incx: increment of x
 **/
-void snrm2(const int n, double *x, const int incx) {
+void dnrm2(const int n, double *x, const int incx) {
 
 	double norm1, norm2, scale, sum1 = 0.0, sum2 = 0.0;
 	double absx_i;
@@ -68,10 +68,10 @@ int main(int argc, char* argv[]) {
 	// Capture start time
 	clock_gettime(CLOCK_MONOTONIC, &begin);
 
-	snrm2(N,X,incx);
+	dnrm2(N,X,incx);
 	
 	// Capture end time
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	t1 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-	printf("snrm2%16lld\n",t1);
+	printf("dnrm2%16lld\n",t1);
 }
