@@ -1,5 +1,5 @@
       
-      subroutine srotg(sa,sb,c,s)
+      subroutine xsrotg(sa,sb,c,s)
 
       real c,s,sa,sb
 
@@ -49,7 +49,7 @@
       return
       end
 
-      subroutine drotg(sa,sb,c,s)
+      subroutine xdrotg(sa,sb,c,s)
 
       double precision c,s,sa,sb
 
