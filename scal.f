@@ -9,56 +9,75 @@
       real x(*),alpha
 
         ! Temporaries      
-      real x_t1(n), x_t2(n), xi_1, xi_2
+      real x_t(n), xi_1, xi_2
 
       real xn
-      integer i,ix
+      integer i,ix, mp1
 
       intrinsic abs
 
       common seps,deps
-100   xn = 0.0e0
+100   xi_1 = 0.0e0
+      xi_2 = 0.0e0
       if (n.le.0) return
       if (incx.eq.1) then
-         do i = 1,n
-            xi = x(i)
-            
-!            x(i) = xi * alpha;
-            xi_1 = xi * alpha;
-            xi_2 = xi * alpha;
-            x_t1(i) = xi_1;
-            x_t2(i) = xi_2;
-           ! xn = xn + xi;
+         
+        
+        m = mod(n,5);
+        if(m.NE.0) then
+            do i = 1,m
+                xi_1 = xi_1 +(x(i) * alpha)
+                xi_2 = xi_2 + (x(i) * alpha)
+                x_t(i) = x(i) * alpha
+            end do
+
+!           Recalculation
+            if(abs(xi_1 - xi_2).ge.seps) then
+                goto 100
+            else
+                do i = 1,m
+                   x(i) = x_t(i);
+                end do
+            endif
+            if (n.lt.5) return
+        end if
+        mp1 = m + 1
+        xi_1 = 0.0e0
+        xi_2 = 0.0e0
+        do i = mp1, n, 5
+            xi_1 = xi_1 + (x(i) * alpha) + (x(i+1) * alpha) + 
+     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
+            xi_2 = xi_2 + (x(i) * alpha) + (x(i+1) * alpha) + 
+     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
+
+!           Recalculation           
+            if(abs(xi_1 - xi_2).ge.seps) then
+                goto 100
+            else
+                x(i) = x(i) * alpha
+                x(i+1) = x(i+1) * alpha
+                x(i+2) = x(i+2) * alpha
+                x(i+3) = x(i+3) * alpha
+                x(i+4) = x(i+4) * alpha
+            end if
          end do
       else
          ix = 1
          if (incx.lt.0) ix = (-n+1)*incx + 1
          do i = 1,n
-            xi = x(i)
+            xi = x(ix)
             
-!            x(i) = xi * alpha;
+            ! Recalculation Check
             xi_1 = xi * alpha;
             xi_2 = xi * alpha;
-            x_t1(i) = xi_1;
-            x_t2(i) = xi_2;
-           ! xn = xn + xi;
+            if(abs(xi_1 - xi_2).ge.seps) then
+                goto 100
+            else
+                x(ix) = xi_1;
+            endif
             ix = ix + incx
          end do
       end if
-*     if (abs(x(n + 1)*alpha - xn).ge.seps) then
-*       print *, "Error occurs in sscal"
-*     end if
-*     x(n + 1) = xn
-
-
-        ! Recalculation check
-      do i = 1,n
-       if (abs(x_t1(i) - x_t2(i)).ge.seps) goto 100
-      end do
-      
-      do i = 1,n
-       x(i) = x_t1(i)
-      end do
       
       return
       end
@@ -76,7 +95,7 @@
       double precision x(*),alpha
       
        ! Temporaries
-      double precision x_t1(n), x_t2(n), xi_1, xi_2
+      double precision x_t(n), xi_1, xi_2
       
       double precision xi,xn
       integer i,ix
@@ -84,47 +103,65 @@
       intrinsic abs
 
       common seps,deps
-200   xn = 0.0d0
+200   xi_1 = 0.0e0
+      xi_2 = 0.0e0
       if (n.le.0) return
       if (incx.eq.1) then
-         do i = 1,n
-            xi = x(i)
+         
+        
+        m = mod(n,5);
+        if(m.NE.0) then
+            do i = 1,m
+                xi_1 = xi_1 +(x(i) * alpha)
+                xi_2 = xi_2 + (x(i) * alpha)
+                x_t(i) = x(i) * alpha
+            end do
 
-!            x(i) = xi * alpha;
-            xi_1 = xi * alpha;
-            xi_2 = xi * alpha;
-            x_t1(i) = xi_1;
-            x_t2(i) = xi_2;
-           ! xn = xn + xi;
+!           Recalculation
+            if(abs(xi_1 - xi_2).ge.seps) then
+                goto 200
+            else
+                do i = 1,m
+                   x(i) = x_t(i);
+                end do
+            endif
+            if (n.lt.5) return
+        end if
+        mp1 = m + 1
+        do i = mp1, n, 5
+            xi_1 = xi_1 + (x(i) * alpha) + (x(i+1) * alpha) + 
+     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
+            xi_2 = xi_2 + (x(i) * alpha) + (x(i+1) * alpha) + 
+     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
+
+!           Recalculation           
+            if(abs(xi_1 - xi_2).ge.deps) then
+                goto 200
+            else
+                x(i) = x(i) * alpha
+                x(i+1) = x(i+1) * alpha
+                x(i+2) = x(i+2) * alpha
+                x(i+3) = x(i+3) * alpha
+                x(i+4) = x(i+4) * alpha
+            end if
          end do
       else
          ix = 1
          if (incx.lt.0) ix = (-n+1)*incx + 1
          do i = 1,n
             xi = x(ix)
-
-!            x(i) = xi * alpha;
+            
+            ! Recalculation Check
             xi_1 = xi * alpha;
             xi_2 = xi * alpha;
-            x_t1(i) = xi_1;
-            x_t2(i) = xi_2;
-           ! xn = xn + xi;
+            if(abs(xi_1 - xi_2).ge.deps) then
+                goto 200
+            else
+                x(i) = xi_1;
+            endif
             ix = ix + incx
          end do
       end if
-*      if (abs(x(n + 1)*alpha - xn).ge.deps) then
-*        print *, "Error occurs in dscal"
-*      end if
-*      x(n + 1) = xn
-  
-        ! Recalculation check
-      do i = 1,n
-        if (dabs(x_t1(i) - x_t2(i)).ge.deps) goto 200
-      end do
-      
-      do i = 1,n
-        x(i) = x_t1(i)
-      end do
       
       return
       end

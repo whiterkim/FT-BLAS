@@ -5,58 +5,72 @@
       real x(*),y(*),alpha
       
       ! Temporaries
-      real y_t1(n), y_t2(n), yi_1, yi_2
+      real y_t(n), yi_1, yi_2
 
       real xi,yn
-      integer i,ix,iy
+      integer i,ix,iy, m, mp1
 
-      intrinsic abs
+      intrinsic abs, mod
 
       common seps,deps
-100   yn = 0.0e0
+100   yi_1 = 0.0e0
+      yi_2 = 0.0e0
       if (n.le.0) return
       if (incx.eq.1 .and. incy.eq.1) then
-         do i = 1,n
-            xi = x(i)
-            yi = y(i)
-            
-            yi_1 = xi * alpha + yi;
-            yi_2 = xi * alpha + yi;
-            y_t1(i) = yi_1;
-            y_t2(i) = yi_2;
-           
-           ! yn = yn + yi;
-         end do
+         
+        m = mod(n,4)
+        if (m.ne.0) then
+            do i = 1,m
+                yi_1 = (y(i) + x(i) * alpha) 
+                yi_2 = (y(i) + x(i) * alpha) 
+                
+!           Recalculation
+                if(abs(yi_1 - yi_2).ge.seps) then
+                    goto 100
+                else
+                    y(i) = yi_1
+                endif
+            end do 
+            if(n.lt.4) return
+        end if
+        mp1 = m + 1
+        do i = mp1, n, 4
+            yi_1 = 0.0e0
+            yi_2 = 0.0e0
+            yi_1 = yi_1 + (y(i) + x(i) * alpha) + 
+     $           (y(i+1) + x(i+1) * alpha) + (y(i+2) + x(i+2) * alpha) +
+     $           (y(i+3) + x(i+3) * alpha)
+            yi_2 = yi_2 + (y(i) + x(i) * alpha) + 
+     $           (y(i+1) + x(i+1) * alpha) + (y(i+2) + x(i+2) * alpha) +
+     $            (y(i+3) + x(i+3) * alpha)
+
+!           Recalculation           
+            if(abs(yi_1 - yi_2).ge.seps) then
+                goto 100
+            else
+                y(i) = y(i) * alpha
+                y(i+1) = y(i+1) * alpha
+                y(i+2) = y(i+2) * alpha
+                y(i+3) = y(i+3) * alpha
+            end if
+        end do
       else
          ix = 1
          iy = 1
          if (incx.lt.0) ix = (-n+1)*incx + 1
          if (incy.lt.0) iy = (-n+1)*incy + 1
          do i = 1,n
-            xi = x(ix)
-            yi = y(iy)
-            
-            yi_1 = xi * alpha + yi;
-            yi_2 = xi * alpha + yi;
-            y_t1(iy) = yi_1;
-            y_t2(iy) = yi_2;
-            
-           ! yn = yn + yi;
+            yi_1 = y(iy) + x(ix) * alpha;
+            yi_2 = y(iy) + x(ix) * alpha;
+            if(abs(yi_1 - yi_2).ge.seps) then
+                goto 100
+            else
+                y(iy) = yi_1
+            end if
             ix = ix + incx
-            iy = iy + incy
+            iy = iy + incy              
          end do
       end if
-!      if (abs(y(n + 1) + alpha*x(n + 1) - yn).ge.seps) then
-!         print *, "Error occurs in saxpy"
-!      end if
-!     y(n + 1) = yn
-      do i = 1,n
-        if (abs(y_t1(i) - y_t2(i)).ge.seps) goto 100
-      end do
-      
-      do i = 1,n
-        y(i) = y_t1(i)
-      end do
       
       return
       end
@@ -76,50 +90,64 @@
       intrinsic abs
 
       common seps,deps
-100   yn = 0.0e0
+200   yi_1 = 0.0e0
+      yi_2 = 0.0e0
       if (n.le.0) return
       if (incx.eq.1 .and. incy.eq.1) then
-         do i = 1,n
-            xi = x(i)
-            yi = y(i)
-            
-            yi_1 = xi * alpha + yi;
-            yi_2 = xi * alpha + yi;
-            y_t1(i) = yi_1;
-            y_t2(i) = yi_2;
-           
-           ! yn = yn + yi;
-         end do
+         
+        m = mod(n,4)
+        if (m.ne.0) then
+            do i = 1,m
+                yi_1 = (y(i) + x(i) * alpha) 
+                yi_2 = (y(i) + x(i) * alpha) 
+                
+!           Recalculation
+                if(abs(yi_1 - yi_2).ge.deps) then
+                    goto 200
+                else
+                    y(i) = yi_1
+                endif
+            end do 
+            if(n.lt.4) return
+        end if
+        mp1 = m + 1
+        do i = mp1, n, 4
+            yi_1 = 0.0e0
+            yi_2 = 0.0e0
+            yi_1 = yi_1 + (y(i) + x(i) * alpha) + 
+     $           (y(i+1) + x(i+1) * alpha) + (y(i+2) + x(i+2) * alpha) +
+     $           (y(i+3) + x(i+3) * alpha)
+            yi_2 = yi_2 + (y(i) + x(i) * alpha) + 
+     $           (y(i+1) + x(i+1) * alpha) + (y(i+2) + x(i+2) * alpha) +
+     $            (y(i+3) + x(i+3) * alpha)
+
+!           Recalculation           
+            if(abs(yi_1 - yi_2).ge.seps) then
+                goto 200
+            else
+                y(i) = y(i) * alpha
+                y(i+1) = y(i+1) * alpha
+                y(i+2) = y(i+2) * alpha
+                y(i+3) = y(i+3) * alpha
+            end if
+        end do
       else
          ix = 1
          iy = 1
          if (incx.lt.0) ix = (-n+1)*incx + 1
          if (incy.lt.0) iy = (-n+1)*incy + 1
          do i = 1,n
-            xi = x(ix)
-            yi = y(iy)
-            
-            yi_1 = xi * alpha + yi;
-            yi_2 = xi * alpha + yi;
-            y_t1(iy) = yi_1;
-            y_t2(iy) = yi_2;
-            
-           ! yn = yn + yi;
+            yi_1 = y(iy) + x(ix) * alpha;
+            yi_2 = y(iy) + x(ix) * alpha;
+            if(abs(yi_1 - yi_2).ge.deps) then
+                goto 200
+            else
+                y(iy) = yi_1
+            end if
             ix = ix + incx
-            iy = iy + incy
+            iy = iy + incy              
          end do
       end if
-!      if (abs(y(n + 1) + alpha*x(n + 1) - yn).ge.seps) then
-!         print *, "Error occurs in saxpy"
-!      end if
-!     y(n + 1) = yn
-      do i = 1,n
-        if (abs(y_t1(i) - y_t2(i)).ge.deps) goto 100
-      end do
       
-      do i = 1,n
-        y(i) = y_t1(i)
-      end do
-   
       return
       end

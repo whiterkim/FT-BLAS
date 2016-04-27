@@ -44,16 +44,7 @@
             iy = iy + incy
          end do
       end if
-      t1 = c*x(n + 1) + s*y(n + 1)
-      t2 = c*y(n + 1) - s*x(n + 1)
-*      if (abs(t1 - xn).ge.seps) then
-*         print *, "Error occurs in srot"
-*      end if
-*      if (abs(t2 - yn).ge.seps) then
-*         print *, "Error occurs in srot"
-*      end if
-      x(n + 1) = t1
-      y(n + 1) = t2
+      
       return
       end
 
@@ -103,15 +94,6 @@
             iy = iy + incy
          end do
       end if
-      t1 = c*x(n + 1) + s*y(n + 1)
-      t2 = c*y(n + 1) - s*x(n + 1)
-*      if (abs(t1 - xn).ge.deps) then
-*         print *, "Error occurs in drot"
-*      end if
-*      if (abs(t2 - yn).ge.deps) then
-*         print *, "Error occurs in drot"
-*      end if
-      x(n + 1) = t1
-      y(n + 1) = t2
+      
       return
       end
