@@ -9,56 +9,69 @@
       real x(*),alpha
 
         ! Temporaries      
-      real x_t(n), xi_1, xi_2
-
-      real xn
+      real x1, x2, x11, x12, x21, x22, x31, x32, x41, x42, x51, x52
+      real xi
       integer i,ix, mp1
 
       intrinsic abs
 
       common seps,deps
-100   xi_1 = 0.0e0
-      xi_2 = 0.0e0
+100   x1 = 0.0e0
+      x2 = 0.0e0
       if (n.le.0) return
       if (incx.eq.1) then
          
         
-        m = mod(n,5);
+        m = mod(n,5)
         if(m.NE.0) then
             do i = 1,m
-                xi_1 = xi_1 +(x(i) * alpha)
-                xi_2 = xi_2 + (x(i) * alpha)
-                x_t(i) = x(i) * alpha
-            end do
+                x1 = x1 +(x(i) * alpha)
+                x2 = x2 + (x(i) * alpha)
 
-!           Recalculation
-            if(abs(xi_1 - xi_2).ge.seps) then
-                goto 100
-            else
-                do i = 1,m
-                   x(i) = x_t(i);
-                end do
-            endif
+!               Recalculation
+                if(abs(x1 - x2).ge.seps) then
+                    goto 100
+                else
+                    x(i) = x1
+                endif
+            end do
             if (n.lt.5) return
         end if
         mp1 = m + 1
-        xi_1 = 0.0e0
-        xi_2 = 0.0e0
+        x1 = 0.0e0
+        x2 = 0.0e0
+        x11 = 0.0e0
+        x21 = 0.0e0
+        x31 = 0.0e0
+        x41 = 0.0e0
+        x51 = 0.0e0
+        x12 = 0.0e0
+        x22 = 0.0e0
+        x32 = 0.0e0
+        x42 = 0.0e0
+        x52 = 0.0e0
         do i = mp1, n, 5
-            xi_1 = xi_1 + (x(i) * alpha) + (x(i+1) * alpha) + 
-     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
-            xi_2 = xi_2 + (x(i) * alpha) + (x(i+1) * alpha) + 
-     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
-
-!           Recalculation           
-            if(abs(xi_1 - xi_2).ge.seps) then
+            x11 = x(i) * alpha
+            x21 = x(i+1) * alpha
+            x31 = x(i+2) * alpha
+            x41 = x(i+3) * alpha
+            x51 = x(i+4) * alpha
+            x12 = x(i) * alpha
+            x22 = x(i+1) * alpha
+            x32 = x(i+2) * alpha
+            x42 = x(i+3) * alpha
+            x52 = x(i+4) * alpha
+            x1 = x11 + x21 + x31 + x41 + x51
+            x2 = x12 + x22 + x32 + x42 + x52
+!           Recalculation          
+            if(abs(x1 - x2).ge.seps) then
                 goto 100
             else
-                x(i) = x(i) * alpha
-                x(i+1) = x(i+1) * alpha
-                x(i+2) = x(i+2) * alpha
-                x(i+3) = x(i+3) * alpha
-                x(i+4) = x(i+4) * alpha
+                x(i) = x11
+                x(i+1) = x21
+                x(i+2) = x31
+                x(i+3) = x41
+                x(i+4) = x51
             end if
          end do
       else
@@ -68,12 +81,12 @@
             xi = x(ix)
             
             ! Recalculation Check
-            xi_1 = xi * alpha;
-            xi_2 = xi * alpha;
-            if(abs(xi_1 - xi_2).ge.seps) then
+            x1 = xi * alpha
+            x2 = xi * alpha
+            if(abs(x1 - x2).ge.seps) then
                 goto 100
             else
-                x(ix) = xi_1;
+                x(ix) = x1
             endif
             ix = ix + incx
          end do
@@ -94,55 +107,70 @@
       integer incx,n
       double precision x(*),alpha
       
-       ! Temporaries
-      double precision x_t(n), xi_1, xi_2
-      
-      double precision xi,xn
+        ! Temporaries      
+      double precision  x1, x2, x11, x12, x21, x22, x31, x32, x41, x42
+      double precision  x51, x52
       integer i,ix
 
       intrinsic abs
 
       common seps,deps
-200   xi_1 = 0.0e0
-      xi_2 = 0.0e0
+100   x1 = 0.0e0
+      x2 = 0.0e0
       if (n.le.0) return
       if (incx.eq.1) then
          
         
-        m = mod(n,5);
+        m = mod(n,5)
         if(m.NE.0) then
             do i = 1,m
-                xi_1 = xi_1 +(x(i) * alpha)
-                xi_2 = xi_2 + (x(i) * alpha)
-                x_t(i) = x(i) * alpha
-            end do
+                x1 = x1 +(x(i) * alpha)
+                x2 = x2 + (x(i) * alpha)
 
-!           Recalculation
-            if(abs(xi_1 - xi_2).ge.seps) then
-                goto 200
-            else
-                do i = 1,m
-                   x(i) = x_t(i);
-                end do
-            endif
+!               Recalculation
+                if(abs(x1 - x2).ge.deps) then
+                    goto 100
+                else
+                    x(i) = x1
+                endif
+            end do
             if (n.lt.5) return
         end if
         mp1 = m + 1
+        x1 = 0.0e0
+        x2 = 0.0e0
+        x11 = 0.0e0
+        x21 = 0.0e0
+        x31 = 0.0e0
+        x41 = 0.0e0
+        x51 = 0.0e0
+        x12 = 0.0e0
+        x22 = 0.0e0
+        x32 = 0.0e0
+        x42 = 0.0e0
+        x52 = 0.0e0
         do i = mp1, n, 5
-            xi_1 = xi_1 + (x(i) * alpha) + (x(i+1) * alpha) + 
-     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
-            xi_2 = xi_2 + (x(i) * alpha) + (x(i+1) * alpha) + 
-     $           (x(i+2) * alpha) + (x(i+3) * alpha) + (x(i+4) * alpha)
-
+            x11 = x(i) * alpha
+            x21 = x(i+1) * alpha
+            x31 = x(i+2) * alpha
+            x41 = x(i+3) * alpha
+            x51 = x(i+4) * alpha
+            x12 = x(i) * alpha
+            x22 = x(i+1) * alpha
+            x32 = x(i+2) * alpha
+            x42 = x(i+3) * alpha
+            x52 = x(i+4) * alpha
+            x1 = x11 + x21 + x31 + x41 + x51
+            x2 = x12 + x22 + x32 + x42 + x52
 !           Recalculation           
-            if(abs(xi_1 - xi_2).ge.deps) then
-                goto 200
+            if(abs(x1 - x2).ge.deps) then
+                goto 100
             else
-                x(i) = x(i) * alpha
-                x(i+1) = x(i+1) * alpha
-                x(i+2) = x(i+2) * alpha
-                x(i+3) = x(i+3) * alpha
-                x(i+4) = x(i+4) * alpha
+                x(i) = x11
+                x(i+1) = x21
+                x(i+2) = x31
+                x(i+3) = x41
+                x(i+4) = x51
             end if
          end do
       else
@@ -152,16 +180,17 @@
             xi = x(ix)
             
             ! Recalculation Check
-            xi_1 = xi * alpha;
-            xi_2 = xi * alpha;
-            if(abs(xi_1 - xi_2).ge.deps) then
-                goto 200
+            x1 = xi * alpha
+            x2 = xi * alpha
+            if(abs(x1 - x2).ge.deps) then
+                goto 100
             else
-                x(i) = xi_1;
+                x(ix) = x1
             endif
             ix = ix + incx
          end do
       end if
+      
       
       return
       end

@@ -38,21 +38,13 @@
             iy = iy + incy
          end do
       end if
-
-!      if ((abs(x(n + 1) - xn).ge.seps)) then
-!         print *, "Error occurs in sswap"
-!      end if
-!      if ((abs(y(n + 1) - yn).ge.seps)) then
-!         print *, "Error occurs in sswap"
-!    end if
-!    x(n + 1) = yn
-!    y(n + 1) = xn
+      
       return
       end
 
 
 
-      subroutine dswap(n,x,incx,y,incy)
+      subroutine xdswap(n,x,incx,y,incy)
 
       integer incx,incy,n
       double precision x(*),y(*)
@@ -91,14 +83,6 @@
             iy = iy + incy
          end do
       end if
-
-!     if ((abs(x(n + 1) - xn).ge.deps)) then
-!        print *, "Error occurs in dswap"
-!     end if
-!     if ((abs(y(n + 1) - yn).ge.deps)) then
-!        print *, "Error occurs in dswap"
-!     end if
-!      x(n + 1) = yn
-!      y(n + 1) = xn
+      
       return
       end
