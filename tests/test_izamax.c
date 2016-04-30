@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 
   int c = 8, ic, it = 0;
 
-  printf("Running test for ICAMAX with N=%d\n",N);
+  printf("Running test for IZAMAX with N=%d\n",N);
   printf("%32s%32s\n","ACML","Fortran");
   printf("Trials\n");
   printf("%16s%16s%16s%16s\n","Result","Time (ns)","Result","Time (ns)");
