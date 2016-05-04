@@ -96,14 +96,17 @@ int main(int argc, char** argv)
     t2 = c_time();
     t3 = f_time();
 
-    tot1 += t1;
-    tot2 += t2;
-    tot3 += t3;
-    ++it;
+    if (ic >= 2)
+    {
+      tot1 += t1;
+      tot2 += t2;
+      tot3 += t3;
+      ++it;
+    }
 
     printf("\n");
   }
-  printf("Average\n");
+  printf("Average (Does not include first 2 trials)\n");
   printf("%32llu%32llu%32llu\n",tot1/it,tot2/it,tot3/it);
 
   return 0;
