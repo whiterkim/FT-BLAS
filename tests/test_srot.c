@@ -104,18 +104,18 @@ int main(int argc, char *argv[])
        		t_y[i] = rand()/1.0/RAND_MAX - 0.5;
 	}
 	
-        int c = 8, ic, it = 0;
+        int c_t = 8, ic, it = 0;
 	
-	printf("Running test for SROT with N = %d, c = %d, s = %d\n", N, c, s);
+	printf("Running test for SROT with N = %d, c = %f, s = %f\n", N, c, s);
         printf("%32s%32s%32s\n","ACML","C", "FORTRAN");
 	printf("Trials\n");
 	printf("%32s%32s%32s\n", "Time (ns)", "Time (ns)", "Time (ns)");
 
         unsigned long long int tot1 = 0, tot2 = 0, tot3 = 0;
-        for (ic = 0; ic < c; ic++)
+        for (ic = 0; ic < c_t; ic++)
         {
                unsigned long long int t1, t2, t3;
-                t1 = acml_time();
+               t1 = acml_time();
                 t2 = c_time();
 		t3 = f_time();
 
