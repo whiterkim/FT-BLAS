@@ -5,15 +5,15 @@
 #include <unistd.h>
 #include <stdint.h>
 #include "/opt/acml5.3.0/gfortran64/include/acml.h"
-extern float xcswap_(int*, complex*, int*, complex*, int*);
+extern float xzswap_(int*, doublecomplex*, int*, doublecomplex*, int*);
 
-void f_cswap(int n, complex *x, int incx, complex *y, int incy)
+void f_zswap(int n, doublecomplex *x, int incx, doublecomplex *y, int incy)
 {
-  xcswap_(&n,x,&incx,y,&incy);
+  xzswap_(&n,x,&incx,y,&incy);
 }
 
 int N;
-complex *x, *y;
+doublecomplex *x, *y;
 int incx, incy;
 
 struct timespec begin, end;
@@ -21,7 +21,7 @@ struct timespec begin, end;
 unsigned long long int acml_time()
 {
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  cswap(N,x,incx,y,incy);
+  zswap(N,x,incx,y,incy);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%16lld",time);
@@ -31,7 +31,7 @@ unsigned long long int acml_time()
 unsigned long long int f_time()
 {
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  f_cswap(N,x,incx,y,incy);
+  f_zswap(N,x,incx,y,incy);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%16lld",time);
@@ -46,8 +46,8 @@ int main(int argc, char** argv)
   init_();
 
   incx = 1;
-  x = (complex*)malloc(sizeof(complex)*N);
-  y = (complex*)malloc(sizeof(complex)*N);
+  x = (doublecomplex*)malloc(sizeof(doublecomplex)*N);
+  y = (doublecomplex*)malloc(sizeof(doublecomplex)*N);
 
   int i;
   for (i = 0; i < N; i++)
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 
   int c = 8, ic, it = 0;
 
-  printf("Running test for CSWAP with N=%d\n",N);
+  printf("Running test for ZSWAP with N=%d\n",N);
   printf("%16s%16s\n","ACML","Fortran");
   printf("Trials\n");
   printf("%16s%16s\n","Time (ns)","Time (ns)");

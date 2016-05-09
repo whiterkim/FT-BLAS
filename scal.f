@@ -20,8 +20,6 @@
       x2 = 0.0e0
       if (n.le.0) return
       if (incx.eq.1) then
-         
-        
         m = mod(n,5)
         if(m.NE.0) then
             do i = 1,m
@@ -208,9 +206,9 @@
       complex x(*),alpha
       real r1, r2, i1, i2
       
-        ! Temporaries      
-      complex  x1, x2, x11, x12, x21, x22, x31, x32, x41, x42
-      complex  x51, x52, xi
+      ! Temporaries      
+      complex  x1, x2, x11, x12, x21, x22, x31, x32, x41, x42,
+     $         x51, x52, xi
       integer i,ix
 
       intrinsic abs, real, aimag
@@ -224,10 +222,8 @@
       i2 = 0.0
       if (n.le.0) return
       if (incx.eq.1) then
-         
-        
         m = mod(n,5)
-        if(m.NE.0) then
+        if(m.ne.0) then
             do i = 1,m
                 xi = x(i)
                 x1 = (x(i) * alpha)
@@ -269,12 +265,12 @@
      $           real(x51) + aimag(x11) + aimag(x21) + aimag(x31) + aimag(x41)
      $           + aimag(x51)
             r2 = real(x12) + real(x22) + real(x32) + real(x42) +
-     $           real(x52) + aimag(x12) + aimag(x22) + aimag(x32) + aimag(x42)
+     $           real(x52) + aimag(x12) + aimag(x22) + aimag(x32) + aimag(x42) +
      $           + aimag(x52)
-            !i1 = aimag(x11) + aimag(x21) + aimag(x31) + aimag(x41) +
-    ! $           aimag(x51)
-    !        i2 = aimag(x12) + aimag(x22) + aimag(x32) + aimag(x42) +
-    ! $           aimag(x52)
+!            i1 = aimag(x11) + aimag(x21) + aimag(x31) + aimag(x41) +
+! $           aimag(x51)
+!           i2 = aimag(x12) + aimag(x22) + aimag(x32) + aimag(x42) +
+! $           aimag(x52)
 !            x1 = x11 + x21 + x31 + x41 + x51
 !            x2 = x12 + x22 + x32 + x42 + x52
 !           Recalculation           
@@ -327,8 +323,8 @@
       real alpha, r1, r2, i1, i2
       
         ! Temporaries      
-      complex  x1, x2, x11, x12, x21, x22, x31, x32, x41, x42
-      complex  x51, x52, xi
+      complex  x1, x2, x11, x12, x21, x22, x31, x32, x41, x42,
+     $         x51, x52, xi
       integer i,ix
 
       intrinsic abs, real, aimag, cmplx
