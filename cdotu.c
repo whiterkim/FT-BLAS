@@ -24,19 +24,24 @@ struct timespec begin, end;
  *		y:    matrix containing float values 
  *		incy: increment of y
 **/
-void cdotu(const int n, float complex *x, const int incx, float complex *y, const int incy) { 
+float complex cdotu(const int n, float complex *x, const int incx, float complex *y, const int incy) { 
 	
 	if (n <= 0) {
-		return;
+		return 0 + 0*I;
 	}
 
 	int ix, iy;
-	float complex ctemp = 0 + 0*I;
+	float complex ctemp1 = 0 + 0*I;
+	float complex ctemp2 = 0 + 0*I;
 	float complex cdotu = 0 + 0*I;
 	if (incx == 1 && incy == 1) {
 		int i;
 		for (i = 0; i < n; i++) {
-			ctemp = crealf(ctemp) + crealf(x[i]*y[i]) + (cimagf(ctemp) + cimagf(x[i]*y[i]))*I;
+			ctemp1 = crealf(ctemp1) + crealf(x[i]*y[i]) + (cimagf(ctemp1) + cimagf(x[i]*y[i]))*I;
+			ctemp2 = crealf(ctemp2) + crealf(x[i]*y[i]) + (cimagf(ctemp2) + cimagf(x[i]*y[i]))*I;
+		}
+		if (ctemp1 == ctemp2) {
+			return ctemp1;
 		}
 	} else {
 		ix = 1;
@@ -47,13 +52,18 @@ void cdotu(const int n, float complex *x, const int incx, float complex *y, cons
 
 		int i;
 		for (i = 0; i < n; i++) {
-			ctemp = crealf(ctemp) + crealf(x[ix]*y[iy]) + (cimagf(ctemp) + cimagf(x[ix]*y[iy]))*I;
+			ctemp1 = crealf(ctemp1) + crealf(x[ix]*y[iy]) + (cimagf(ctemp1) + cimagf(x[ix]*y[iy]))*I;
+			ctemp2 = crealf(ctemp2) + crealf(x[ix]*y[iy]) + (cimagf(ctemp2) + cimagf(x[ix]*y[iy]))*I;
 			ix += incx;
 			iy += incy;
+		}
+		if (ctemp1 == ctemp2) {
+			return ctemp1;
 		}
 	}
 	// Final result assigned to ctemp
 	//printf("cdotu Result: %i + %i*i\n",crealf(ctemp),cimagf(ctemp));
+	return 0 + 0*I;
 }
 
 int main(int argc, char* argv[]) {

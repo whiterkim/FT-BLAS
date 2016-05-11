@@ -22,7 +22,7 @@ struct timespec begin, end;
  *      x:    matrix containing float values
  *      incx: increment of x
 **/
-void snrm2(const int n, float *x, const int incx) {
+float snrm2(const int n, float *x, const int incx) {
 
 	float norm1, norm2, scale, sum1 = 0.0, sum2 = 0.0;
 	float absx_i;
@@ -48,6 +48,10 @@ void snrm2(const int n, float *x, const int incx) {
 	// the norm variable holds the final result.
 	//printf("snrm2 result1: %f\n", norm1);
 	//printf("snrm2 result2: %f\n", norm2);
+	if (norm1 == norm2) {
+		return norm1;
+	}
+	return -1.0;
 }
 
 int main(int argc, char* argv[]) {

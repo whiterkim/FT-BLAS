@@ -13,25 +13,23 @@
 
 struct timespec begin, end;
 
-/* SDS: Real with double calculation version 
- * Function: cdotu
- * 		This function is the Real(SDS) version of xxDot. It performs the task of doing a dot product of 
+/* DS: Real to Double calculation version 
+ * Function: dsdot
+ * 		This function is the Real(DS) version of xDot. It performs the task of doing a dot product of 
  * 		the values from matrix X(transpose) to the Y and adds an alpha.
  * Parameters:
  * 		n:    dimensions
- *		alpha:scalar value to be added with the values
  *		x:    matrix containing float values
  *		incx: increment of x
  *		y:    matrix containing float values 
  *		incy: increment of y
 **/
-float sdsdot(const int n, float alpha, float *x, const int incx, float *y, const int incy) { 
+double dsdot(const int n, float *x, const int incx, float *y, const int incy) { 
 	
-	double dsdot1 = (double)alpha;
-	double dsdot2 = (double)alpha;
+	float dsdot1 = 0.0;
+	float dsdot2 = 0.0;
 	if (n <= 0) {
-		// return alpha
-		return dsdot1;
+		return 0.0;
 	}
 
 	int ix, iy;
@@ -60,7 +58,7 @@ float sdsdot(const int n, float alpha, float *x, const int incx, float *y, const
 	// Final result assigned to ctemp
 	//printf("sdsdot Result: %f\n", dsdot);
 	if (dsdot1 == dsdot2) {
-		return (float)dsdot1;
+		return dsdot1;
 	}
 	// error: Not equal
 	return 0;
@@ -71,7 +69,7 @@ int main(int argc, char* argv[]) {
 	int N = (int)pow(10,7);
 	float *X = (float *)malloc(sizeof(float *)*N);
 	float *Y = (float *)malloc(sizeof(float *)*N);
-	float alpha = 0.0;
+
 	int incx = 1;
 	int incy = 1;
 
@@ -89,10 +87,10 @@ int main(int argc, char* argv[]) {
 	// Capture start time
 	clock_gettime(CLOCK_MONOTONIC, &begin);
 	
-	sdsdot(N,alpha,X,incx,Y,incy);
+	dsdot(N,alpha,X,incx,Y,incy);
 
 	// Capture end time
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	t1 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-	printf("sdsdot%16lld\n",t1);
+	printf("dsdot%16lld\n",t1);
 }

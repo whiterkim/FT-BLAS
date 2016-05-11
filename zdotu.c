@@ -24,17 +24,19 @@ struct timespec begin, end;
  *      y:    matrix containing float values 
  *      incy: increment of y
 **/
-void zdotu(const int n, double complex *x, const int incx, double complex *y, const int incy) {
+double complex zdotu(const int n, double complex *x, const int incx, double complex *y, const int incy) {
 
 	if (n <= 0) {
 		return;
 	}
 	int ix, iy;
-	double complex ctemp = 0.0 + 0.0*I;
+	double complex ctemp1 = 0.0 + 0.0*I;
+	double complex ctemp2 = 0.0 + 0.0*I;
 	if (incx == 1 && incy == 1) {
 		int i;
 		for (i = 0; i < n; i++) {
-			ctemp = creal(ctemp) + creal(x[i]*y[i]) + (cimag(ctemp) + cimag(x[i]*y[i]))*I;
+			ctemp1 = creal(ctemp1) + creal(x[i]*y[i]) + (cimag(ctemp1) + cimag(x[i]*y[i]))*I;
+			ctemp2 = creal(ctemp2) + creal(x[i]*y[i]) + (cimag(ctemp2) + cimag(x[i]*y[i]))*I;
 		}
 	} else {
 		ix = 1;
@@ -45,13 +47,18 @@ void zdotu(const int n, double complex *x, const int incx, double complex *y, co
 
 		int i;
 		for (i = 0; i < n; i++) {
-			ctemp = creal(ctemp) + creal(x[ix]*y[iy]) + (cimag(ctemp) + cimag(x[ix]*y[iy]))*I;
+			ctemp1 = creal(ctemp1) + creal(x[ix]*y[iy]) + (cimag(ctemp1) + cimag(x[ix]*y[iy]))*I;
+			ctemp2 = creal(ctemp2) + creal(x[ix]*y[iy]) + (cimag(ctemp2) + cimag(x[ix]*y[iy]))*I;
 			ix += incx;
 			iy += incy;
 		}
 	}
 	// Final result assigned to ctemp
 	//printf("zdotu Result: %i + %i*i\n",creal(ctemp),cimag(ctemp));
+	if (ctemp1 == ctemp2) {
+		return ctemp1;
+	}
+	return 0.0 + 0.0*I;
 }
 
 int main(int argc, char* argv[]) {

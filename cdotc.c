@@ -24,18 +24,20 @@ struct timespec begin, end;
  *		y:    matrix containing float values 
  *		incy: increment of y
 **/
-void cdotc(const int n, float complex *x, const int incx, float complex *y, const int incy) { 
+float complex cdotc(const int n, float complex *x, const int incx, float complex *y, const int incy) { 
 
 	if (n <= 0) {
-		return;
+		return 0 + 0*I;
 	}
 
 	int ix, iy;
-	float complex ctemp = 0 + 0*I;
+	float complex ctemp1 = 0 + 0*I;
+	float complex ctemp2 = 0 + 0*I;
 	if (incx == 1 && incy == 1) {
 		int i;
 		for (i = 0; i < n; i++) {
-			ctemp = crealf(ctemp) + crealf(conjf(x[i])*y[i]) + (cimagf(ctemp) + cimagf(conjf(x[i])*y[i]))*I;
+			ctemp1 = crealf(ctemp1) + crealf(conjf(x[i])*y[i]) + (cimagf(ctemp1) + cimagf(conjf(x[i])*y[i]))*I;
+			ctemp2 = crealf(ctemp2) + crealf(conjf(x[i])*y[i]) + (cimagf(ctemp2) + cimagf(conjf(x[i])*y[i]))*I;
 		}
 	} else {
 		ix = 1;
@@ -46,13 +48,18 @@ void cdotc(const int n, float complex *x, const int incx, float complex *y, cons
 
 		int i;
 		for (i = 0; i < n; i++) {
-			ctemp = crealf(ctemp) + crealf(conjf(x[ix])*y[iy]) + (cimagf(ctemp) + cimagf(conjf(x[ix])*y[iy]))*I;
+			ctemp1 = crealf(ctemp1) + crealf(conjf(x[ix])*y[iy]) + (cimagf(ctemp1) + cimagf(conjf(x[ix])*y[iy]))*I;
+			ctemp2 = crealf(ctemp2) + crealf(conjf(x[ix])*y[iy]) + (cimagf(ctemp2) + cimagf(conjf(x[ix])*y[iy]))*I;
 			ix += incx;
 			iy += incy;
 		}
 	}
 	// Final result assigned to ctemp
 	//printf("cdotc Result: %i + %i*i\n",crealf(ctemp),cimagf(ctemp));
+	if (ctemp1 == ctemp2) {
+		return ctemp1;
+	}
+	return 0 + 0*I;
 }
 
 int main(int argc, char* argv[]) {
