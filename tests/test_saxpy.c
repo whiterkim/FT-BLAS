@@ -7,20 +7,22 @@
 #include <stdint.h>
 #include "/opt/acml5.3.0/gfortran64/include/acml.h"
 
-extern	void	xsaxpy_( const int*n, const float *alpha, float *f_x, const int*incx, float *f_y, const int* incy);
+extern	void	xsaxpy_(int *n, float *alpha, float *x, int *incx, float *y, int* incy);
 
-
-// Fortran 
 void f_saxpy(int n, float alpha, float *x, int incx, float *y, int incy)
 {
-	xsaxpy_(&n,&alpha,x,&incx,y,&incy);
+  xsaxpy_(&n,&alpha,x,&incx,y,&incy);
 }
 
 int N, incx, incy;
 float alpha;
 float *x, *y_1, *y_2,*t_y;
 
+float seps = 0.000001;
+double deps = 0.0000000001;
+
 struct timespec begin, end;
+
 unsigned long long int acml_time()
 {
   memcpy(y_1,t_y,sizeof(float)*N);
@@ -31,7 +33,6 @@ unsigned long long int acml_time()
 
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%32lld",time);
-  fflush(stdout);
   return time;
 }
 
@@ -51,15 +52,19 @@ unsigned long long int f_time()
 
 int array_cmp()
 {
-  int n1 = memcmp(y_1,y_2,sizeof(float)*N);
-
-  return !n1;
+  int i;
+  for (i = 0; i < N; ++i)
+  {
+    if (abs(y_1[i] - y_2[i]) > seps)
+      return 0;
+  }
+  return 1;
 }
 
 void run_test() 
 {
-  printf("Running test for SAXPY with N = %d, incx = %d, incy = %d, alpha = %d\n ", N, incx, incy, alpha);
-  printf("%32s%32s\n","ACML", "Fortran");
+  printf("Running test for SAXPY with N = %d, incx = %d, incy = %d\n", N, incx, incy);
+  printf("%32s%32s\n","ACML","Fortran");
   printf("Trials\n");
   printf("%32s%32s%32s\n", "Time (ns)", "Time (ns)", "ACML == FT");
 
@@ -90,6 +95,7 @@ void run_test()
 int main(int argc, char *argv[])
 {
   srand(time(NULL));
+  init_();
 
   N = atoi(argv[1]);
 
