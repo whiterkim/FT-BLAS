@@ -7,36 +7,424 @@
 #include <string.h>
 #include "acml.h"
 
-struct timespec begin, end;
 
-void ori(char trans, int m, int n, float alpha, float *A, int lda, float *x, int incx, float beta, float *y, int incy)
+#define BLASLONG long
+#define FLOAT float
+
+
+#define NBMAX 4096
+
+/***************************************
+ *OpenBLAS version
+ **************************************/
+
+//#ifndef HAVE_KERNEL_16x4
+
+static void sgemv_kernel_16x4(BLASLONG n, FLOAT **ap, FLOAT *x, FLOAT *y)
 {
-    if ((m == 0) || (n == 0) || (alpha == 0 && beta == 1))
-        return;
-    int i, j;
-    float xj, t;
+    BLASLONG i;
+    FLOAT *a0,*a1,*a2,*a3;
+    a0 = ap[0];
+    a1 = ap[1];
+    a2 = ap[2];
+    a3 = ap[3];
 
-    //y = beta*y
-    if (beta == 0)
-        memset(y,0,sizeof(float)*m);
-    else if (beta != 1)
-        for (i = 0; i < m; i++)
-            y[i] *= beta;
-
-
-    if (alpha == 0) return;
-
-    //y = alpha*A*x + y
-    for (j = 0; j < n; j++)
+    for ( i=0; i< n; i+=4 )
     {
-        xj = alpha*x[j];
-        for (i = 0; i < m - 3; i+=3)
-            y[i] += xj*(A[i + j*lda]+A[i + j*lda + 1] + A[i + j*lda + 2]);
-        for (; i < m; i++)
-            y[i] += xj*A[i + j*lda];
+        y[i] += a0[i]*x[0] + a1[i]*x[1] + a2[i]*x[2] + a3[i]*x[3];
+        y[i+1] += a0[i+1]*x[0] + a1[i+1]*x[1] + a2[i+1]*x[2] + a3[i+1]*x[3];
+        y[i+2] += a0[i+2]*x[0] + a1[i+2]*x[1] + a2[i+2]*x[2] + a3[i+2]*x[3];
+        y[i+3] += a0[i+3]*x[0] + a1[i+3]*x[1] + a2[i+3]*x[2] + a3[i+3]*x[3];
+    }
+}
+
+//#endif
+
+static void sgemv_kernel_16x1(BLASLONG n, FLOAT *ap, FLOAT *x, FLOAT *y)
+{
+    BLASLONG i;
+    FLOAT *a0;
+    a0 = ap;
+
+    for ( i=0; i< n; i+=4 )
+    {
+        y[i] += a0[i]*x[0];
+        y[i+1] += a0[i+1]*x[0];
+        y[i+2] += a0[i+2]*x[0];
+        y[i+3] += a0[i+3]*x[0];
+    }
+}
+
+
+static void zero_y(BLASLONG n, FLOAT *dest)
+{
+    BLASLONG i;
+    for ( i=0; i<n; i++ )
+    {
+        *dest = 0.0;
+        dest++;
+    }
+}
+
+
+
+static void add_y(BLASLONG n, FLOAT *src, FLOAT *dest, BLASLONG inc_dest)
+{
+    BLASLONG i;
+    if ( inc_dest == 1 )
+    {
+        for ( i=0; i<n; i+=4 )
+        {
+            dest[i] += src[i];
+            dest[i+1] += src[i+1];
+            dest[i+2] += src[i+2];
+            dest[i+3] += src[i+3];
+        }
+
+    }
+    else
+    {
+        for ( i=0; i<n; i++ )
+        {
+            *dest += *src;
+            src++;
+            dest += inc_dest;
+        }
+    }
+}
+
+int CNAME(BLASLONG m, BLASLONG n, BLASLONG dummy1, FLOAT alpha, FLOAT *a, BLASLONG lda, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *buffer)
+{
+    BLASLONG i;
+    BLASLONG j;
+    FLOAT *a_ptr;
+    FLOAT *x_ptr;
+    FLOAT *y_ptr;
+    FLOAT *ap[4];
+    BLASLONG n1;
+    BLASLONG m1;
+    BLASLONG m2;
+    BLASLONG n2;
+    FLOAT xbuffer[4],*ybuffer;
+
+        if ( m < 1 ) return(0);
+        if ( n < 1 ) return(0);
+
+    ybuffer = buffer;
+
+    n1 = n / 4 ;
+    n2 = n % 4 ;
+
+    m1 = m - ( m % 16 );
+    m2 = (m % NBMAX) - (m % 16) ;
+
+    y_ptr = y;
+
+    BLASLONG NB = NBMAX;
+
+    while ( NB == NBMAX )
+    {
+
+        m1 -= NB;
+        if ( m1 < 0)
+        {
+            if ( m2 == 0 ) break;
+            NB = m2;
+        }
+
+        a_ptr = a;
+        x_ptr = x;
+        zero_y(NB,ybuffer);
+        for( i = 0; i < n1 ; i++)
+        {
+            xbuffer[0] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            xbuffer[1] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            xbuffer[2] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            xbuffer[3] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            ap[0] = a_ptr;
+            ap[1] = a_ptr + lda;
+            ap[2] = ap[1] + lda;
+            ap[3] = ap[2] + lda;
+            sgemv_kernel_16x4(NB,ap,xbuffer,ybuffer);
+            a_ptr += 4 * lda;
+        }
+
+        for( i = 0; i < n2 ; i++)
+        {
+            xbuffer[0] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            sgemv_kernel_16x1(NB,a_ptr,xbuffer,ybuffer);
+            a_ptr += 1 * lda;
+
+        }
+        add_y(NB,ybuffer,y_ptr,inc_y);
+        a     += NB;
+        y_ptr += NB * inc_y;
+    }
+    j=0;
+    while ( j < (m % 16))
+    {
+        a_ptr = a;
+        x_ptr = x;
+        FLOAT temp = 0.0;
+        for( i = 0; i < n; i++ )
+        {
+            temp += a_ptr[0] * x_ptr[0];
+            a_ptr += lda;
+            x_ptr += inc_x;
+        }
+        y_ptr[0] += alpha * temp;
+        y_ptr += inc_y;
+        a++;
+        j++;
+    }
+    return(0);
+}
+
+
+/***************************************
+ *OpenBLAS version with checksum
+ **************************************/
+
+//#ifndef HAVE_KERNEL_16x4
+
+static void sgemv_kernel_16x4_2(BLASLONG n, FLOAT **ap, FLOAT *x, FLOAT *y, FLOAT *c)
+{
+    BLASLONG i;
+    FLOAT *a0,*a1,*a2,*a3;
+    a0 = ap[0];
+    a1 = ap[1];
+    a2 = ap[2];
+    a3 = ap[3];
+
+    /*for ( i=0; i< n; i+=4 )
+    {
+        y[i] += a0[i]*x[0] + a1[i]*x[1] + a2[i]*x[2] + a3[i]*x[3];
+        y[i+1] += a0[i+1]*x[0] + a1[i+1]*x[1] + a2[i+1]*x[2] + a3[i+1]*x[3];
+        y[i+2] += a0[i+2]*x[0] + a1[i+2]*x[1] + a2[i+2]*x[2] + a3[i+2]*x[3];
+        y[i+3] += a0[i+3]*x[0] + a1[i+3]*x[1] + a2[i+3]*x[2] + a3[i+3]*x[3];
+        c[0] += a0[i] + a0[i + 1] + a0[i + 2] + a0[i + 3];
+        c[1] += a1[i] + a1[i + 1] + a1[i + 2] + a1[i + 3];
+        c[2] += a2[i] + a2[i + 1] + a2[i + 2] + a2[i + 3];
+        c[3] += a3[i] + a3[i + 1] + a3[i + 2] + a3[i + 3];
+    }*/
+	
+	FLOAT t0, t1, t2, t3;
+	FLOAT x0, x1, x2, x3;
+	FLOAT c0, c1, c2, c3;
+	c0 = c1 = c2 = c3 = 0;
+	x0 = x[0]; x1 = x[1]; x2 = x[2]; x3 = x[3];
+    for ( i=0; i< n; i+=4 )
+	{
+		t0 = a0[i]; t1 = a1[i]; t2 = a2[i]; t3 = a3[i];
+		y[i] += t0*x0 + t1*x1 + t2*x2 + t3*x3;
+		c0 += t0; c1 += t1; c2 += t2; c3 += t3;
+
+		t0 = a0[i + 1]; t1 = a1[i + 1]; t2 = a2[i + 1]; t3 = a3[i + 1];
+		y[i + 1] += t0*x0 + t1*x1 + t2*x2 + t3*x3;
+		c0 += t0; c1 += t1; c2 += t2; c3 += t3;
+
+		t0 = a0[i + 2]; t1 = a1[i + 2]; t2 = a2[i + 2]; t3 = a3[i + 2];
+		y[i + 2] += t0*x0 + t1*x1 + t2*x2 + t3*x3;
+		c0 += t0; c1 += t1; c2 += t2; c3 += t3;
+
+		t0 = a0[i + 3]; t1 = a1[i + 3]; t2 = a2[i + 3]; t3 = a3[i + 3];
+		y[i + 3] += t0*x0 + t1*x1 + t2*x2 + t3*x3;
+		c0 += t0; c1 += t1; c2 += t2; c3 += t3;
+     
+	}
+	c[0] += c0;
+	c[1] += c1;
+	c[2] += c2;
+	c[3] += c3;
+}
+
+//#endif
+
+static void sgemv_kernel_16x1_2(BLASLONG n, FLOAT *ap, FLOAT *x, FLOAT *y, FLOAT *c)
+{
+    BLASLONG i;
+    FLOAT *a0;
+    a0 = ap;
+
+	FLOAT t0, t1, t2, t3;
+    for ( i=0; i< n; i+=4 )
+    {
+		t0 = a0[i]; t1 = a0[i + 1]; t2 = a0[i + 2]; t3 = a0[i + 3];
+        y[i] += t0*x[0];
+        y[i+1] += t1*x[0];
+        y[i+2] += t2*x[0];
+        y[i+3] += t3*x[0];
+        c[0] += t0 + t1 + t2 + t3;
+    }
+}
+
+
+static void zero_y_2(BLASLONG n, FLOAT *dest)
+{
+    /*BLASLONG i;
+    for ( i=0; i<n; i++ )
+    {
+        *dest = 0.0;
+        dest++;
+    }*/
+	memset(dest, 0, sizeof(FLOAT)*n);
+}
+
+
+
+static void add_y_2(BLASLONG n, FLOAT *src, FLOAT *dest, BLASLONG inc_dest)
+{
+    BLASLONG i;
+    if ( inc_dest == 1 )
+    {
+        for ( i=0; i<n; i+=4 )
+        {
+            dest[i] += src[i];
+            dest[i+1] += src[i+1];
+            dest[i+2] += src[i+2];
+            dest[i+3] += src[i+3];
+        }
+
+    }
+    else
+    {
+        for ( i=0; i<n; i++ )
+        {
+            *dest += *src;
+            src++;
+            dest += inc_dest;
+        }
+    }
+}
+
+int openCkm(BLASLONG m, BLASLONG n, BLASLONG dummy1, FLOAT alpha, FLOAT *a, BLASLONG lda, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *buffer)
+{
+    BLASLONG i;
+    BLASLONG j;
+    FLOAT *a_ptr;
+    FLOAT *x_ptr;
+    FLOAT *y_ptr;
+    FLOAT *ap[4];
+    BLASLONG n1;
+    BLASLONG m1;
+    BLASLONG m2;
+    BLASLONG n2;
+    FLOAT xbuffer[4],*ybuffer;
+
+        if ( m < 1 ) return(0);
+        if ( n < 1 ) return(0);
+
+    FLOAT *c = (FLOAT*)malloc(sizeof(FLOAT)*n);
+    memset(c,0,sizeof(FLOAT)*n);
+    FLOAT *c_ptr = c;
+    FLOAT cy = 0;
+    for (i = 0; i < m; i++)
+        cy += y[i];
+
+    ybuffer = buffer;
+
+    n1 = n / 4 ;
+    n2 = n % 4 ;
+
+    m1 = m - ( m % 16 );
+    m2 = (m % NBMAX) - (m % 16) ;
+
+    y_ptr = y;
+
+    BLASLONG NB = NBMAX;
+
+    while ( NB == NBMAX )
+    {
+
+        m1 -= NB;
+        if ( m1 < 0)
+        {
+            if ( m2 == 0 ) break;
+            NB = m2;
+        }
+
+        a_ptr = a;
+        x_ptr = x;
+        zero_y_2(NB,ybuffer);
+        for( i = 0; i < n1 ; i++)
+        {
+            xbuffer[0] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            xbuffer[1] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            xbuffer[2] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            xbuffer[3] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            ap[0] = a_ptr;
+            ap[1] = a_ptr + lda;
+            ap[2] = ap[1] + lda;
+            ap[3] = ap[2] + lda;
+            sgemv_kernel_16x4_2(NB,ap,xbuffer,ybuffer,c_ptr);
+            a_ptr += 4 * lda;
+            c_ptr += 4;
+        }
+
+        for( i = 0; i < n2 ; i++)
+        {
+            xbuffer[0] = alpha * x_ptr[0];
+            x_ptr += inc_x;
+            sgemv_kernel_16x1_2(NB,a_ptr,xbuffer,ybuffer,c_ptr);
+            a_ptr += 1 * lda;
+            c_ptr ++;
+        }
+        add_y_2(NB,ybuffer,y_ptr,inc_y);
+        a     += NB;
+        y_ptr += NB * inc_y;
+        c_ptr = c;
+    }
+    j=0;
+    while ( j < (m % 16))
+    {
+        a_ptr = a;
+        x_ptr = x;
+        c_ptr = c;
+        FLOAT temp = 0.0;
+        for( i = 0; i < n; i++ )
+        {
+            temp += a_ptr[0] * x_ptr[0];
+            c_ptr[0] += a_ptr[0];
+            a_ptr += lda;
+            c_ptr ++;
+            x_ptr += inc_x;
+        }
+        y_ptr[0] += alpha * temp;
+        y_ptr += inc_y;
+        a++;
+        j++;
     }
 
+    FLOAT t1 = 0, t2 = 0;
+    for (i = 0; i < m; i++)
+        t1 += y[i];
+
+    for (i = 0; i < n; i++)
+        t2 += alpha*c[i]*x[i];
+    t2 += cy;
+/*
+    printf("       %15.10f\n",t1);
+    printf("       %15.10f\n",t2);
+    printf("abs err%15.10f\n",fabs(t1-t2));
+    printf("rel err%15.10f\n",fabs(1-t1/t2));
+    printf("    err%15.10f\n",fabs(1-t1/t2)/(n*m*1e-6));
+*/
+    /*printf("c1\n");
+    for (i = 0; i < n; i++)
+        printf("%6.1f",c[i]);
+    printf("\n");*/
+    return(0);
 }
+
 
 void one(char trans, int m, int n, float alpha, float *A, int lda, float *x, int incx, float beta, float *y, int incy)
 {
@@ -81,147 +469,16 @@ void one(char trans, int m, int n, float alpha, float *A, int lda, float *x, int
     for (j = 0; j < n; j++)
         t2 += c[j]*x[j]*alpha;
     t2 += cy;
-
+/*
     printf("       %15.10f\n",t1);
     printf("       %15.10f\n",t2);
     printf("abs err%15.10f\n",fabs(t1-t2));
     printf("rel err%15.10f\n",fabs(1-t1/t2));
     printf("    err%15.10f\n",fabs(1-t1/t2)/(n*m*1e-6));
-
-
-
-
-/*  for (i=0;i<m;i++)printf("%10f",y[i]);printf("\n");
-    for (i=0;i<n;i++)printf("%10f",x[i]);printf("\n");
-    for (i=0;i<n;i++)printf("%10f",c[i]);printf("\n");
-    for (i=0;i<m;i++)
-    {
-        for (j=0;j<n;j++)
-            printf("%10f",A[i+j*lda]);
-        printf("\n");
-    }*/
+*/
 }
 
-void exx(char trans, int m, int n, float alpha, float *A, int lda, float *x, int incx, float beta, float *y, int incy)
-{
-    if ((m == 0) || (n == 0) || (alpha == 0 && beta == 1))
-        return;
-    int i, j;
-    float yi, cy = 0;
-
-    //y = beta*y
-    if (beta == 0)
-        memset(y,0,sizeof(float)*m);
-    else //if (beta != 1)
-        for (i = 0; i < m; i++)
-        {
-            yi = y[i]*beta;
-            y[i] = yi;
-            cy += yi;
-        }
-
-
-    if (alpha == 0) return;
-
-    float *c = (float*)malloc(sizeof(float)*n);
-    float ai, cj, xj, t;
-    float a0, a1, a2;
-    //y = alpha*A*x + y
-    for (j = 0; j < n; j++)
-    {
-        xj = alpha*x[j];
-        cj = 0;
-        for (i = 0; i < m - 3; i+=3)
-        {
-            //a0 = A[i + j*lda];
-            //a1 = A[i + j*lda + 1];
-            //a2 = A[i + j*lda + 2];
-            //t = a0 + a1 + a2;
-            t = A[i + j*lda] + A[i + j*lda + 1] + A[i + j*lda + 2];
-            y[i] += xj*t;
-            cj += t;
-        }
-        for (; i < m; i++)
-        {
-            ai = A[i + j*lda];
-            y[i] += xj*ai;
-            cj +=ai;
-        }
-        c[j] = cj;
-    }
-
-    float t1 = 0, t2 = 0;
-    for (i = 0; i < m; i++)
-        t1 += y[i];
-
-    for (j = 0; j < n; j++)
-        t2 += c[j]*x[j]*alpha;
-    t2 += cy;
-
-    printf("       %15.10f\n",t1);
-    printf("       %15.10f\n",t2);
-    printf("abs err%15.10f\n",fabs(t1-t2));
-    printf("rel err%15.10f\n",fabs(1-t1/t2));
-    printf("    err%15.10f\n",fabs(1-t1/t2)/(n*m*1e-6));
-}
-
-void dou(char trans, int m, int n, float alpha, float *A, int lda, float *x, int incx, float beta, float *y, int incy)
-{
-    if ((m == 0) || (n == 0) || (alpha == 0 && beta == 1))
-        return;
-    int i, j;
-    float xj,y1,y2,ai,yi;
-    float a0,a1,a2;
-
-    //y = beta*y
-    if (beta == 0)
-        memset(y,0,sizeof(float)*m);
-    else if (beta != 1)
-        for (i = 0; i < m; i++)
-        {
-            yi = y[i];
-            do {
-                y1 = yi*beta;
-                y2 = yi*beta;
-            } while (y1 != y2);
-            y[i] = y1;
-        }
-
-    if (alpha == 0) return;
-
-    //y = alpha*A*x + y
-    for (j = 0; j < n; j++)
-    {
-        xj = x[j];
-        for (i = 0; i < m-3; i+=3)
-        {
-            yi = y[i];
-            a0 = A[i + j*lda];
-            a1 = A[i + j*lda + 1];
-            a2 = A[i + j*lda + 2];
-            Y:
-                y1 = yi + (a0+a1+a2)*xj*alpha;
-                y2 = yi + (a0+a1+a2)*xj*alpha;
-            if (y1 != y2) goto Y;
-            y[i] = y1;
-        }
-        for (; i < m; i++)
-        {
-            ai = A[i + j*lda];
-            yi = y[i];
-            X:
-                y1 = yi + ai*xj*alpha;
-                y2 = yi + ai*xj*alpha;
-            if (y1 != y2) goto X;
-            y[i] = y1;
-        }
-    }
-
-
-}
-
-struct timespec begin,end;
-
+struct timespec begin, end;
 int main(int argc, char *argv[])
 {
     srand(time(0));
@@ -233,16 +490,18 @@ int main(int argc, char *argv[])
     float *y;
     float *A;
     float *t;
+	float *buffer;
     int incx = 1;
     int incy = 1;
     float alpha, beta;
     int lda = m;
     alpha = rand()/1.0/RAND_MAX - 0.5;
-    beta = rand()/1.0/RAND_MAX - 0.5;
+    beta = 1;//rand()/1.0/RAND_MAX - 0.5;
     x = (float*)malloc(sizeof(float)*n);
     y = (float*)malloc(sizeof(float)*m);
     t = (float*)malloc(sizeof(float)*m);
     A = (float*)malloc(sizeof(float)*m*n);
+	buffer = (float*)malloc(sizeof(float)*m*n);
 
     for (i = 0; i < n; i++)
         x[i] = rand()/1.0/RAND_MAX - 0.5;
@@ -254,47 +513,49 @@ int main(int argc, char *argv[])
     //y = alpha*A*x + beta*y    //m row //n col
 
     unsigned long long int t1,t2,t3,t4,t5;
-    printf("acm\n");
+    //printf("acm\n");//ACML version
     memcpy(y,t,sizeof(float)*m);
     clock_gettime(CLOCK_MONOTONIC, &begin);
     sgemv('N', m, n, alpha, A, lda, x, incx, beta, y, incy);
     clock_gettime(CLOCK_MONOTONIC, &end);
     t1 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
 
-    printf("ori\n");
-    memcpy(y,t,sizeof(float)*m);
-    clock_gettime(CLOCK_MONOTONIC, &begin);
-    ori('N', m, n, alpha, A, lda, x, incx, beta, y, incy);
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    t2 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-
-    printf("one\n");
+    //printf("one\n");//Native version with checksum
     memcpy(y,t,sizeof(float)*m);
     clock_gettime(CLOCK_MONOTONIC, &begin);
     one('N', m, n, alpha, A, lda, x, incx, beta, y, incy);
     clock_gettime(CLOCK_MONOTONIC, &end);
-    t3 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
+    t2 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
 
-    printf("exx\n");
+    //printf("opc\n");//OpenBLAS version with checksum
     memcpy(y,t,sizeof(float)*m);
     clock_gettime(CLOCK_MONOTONIC, &begin);
-    exx('N', m, n, alpha, A, lda, x, incx, beta, y, incy);
+    //CNAME('N', m, n, alpha, A, lda, x, incx, beta, y, incy);
+	openCkm(m,n,0,alpha,A,lda,x,incx,y,incy,buffer);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    t3 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
+
+    //printf("opn\n");//OpenBLAS version
+    memcpy(y,t,sizeof(float)*m);
+    clock_gettime(CLOCK_MONOTONIC, &begin);
+	CNAME(m,n,0,alpha,A,lda,x,incx,y,incy,buffer);
     clock_gettime(CLOCK_MONOTONIC, &end);
     t4 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
 
-
-    printf("dou\n");
+    /*printf("opo\n");//OpenBLAS version (with new kernel)
     memcpy(y,t,sizeof(float)*m);
     clock_gettime(CLOCK_MONOTONIC, &begin);
-    dou('N', m, n, alpha, A, lda, x, incx, beta, y, incy);
+	CNAME_3(m,n,0,alpha,A,lda,x,incx,y,incy,buffer);
     clock_gettime(CLOCK_MONOTONIC, &end);
-    t5 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
+    t5 =  1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;*/
+
 
     printf("acm%16lld\n",t1);
-    printf("ori%16lld\n",t2);
-    printf("one%16lld\n",t3);
-    printf("exx%16lld\n",t4);
-    printf("dou%16lld\n",t5);
+    printf("one%16lld\n",t2);
+    printf("opc%16lld\n",t3);
+    printf("opn%16lld\n",t4);
+    //printf("opo%16lld\n",t5);
     return 0;
 }
+
 
