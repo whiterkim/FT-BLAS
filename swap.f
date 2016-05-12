@@ -9,9 +9,6 @@
 
       intrinsic abs
 
-      common seps,deps
-100   xn = 0.0e0
-      yn = 0.0e0
       if (n.le.0) return
       if (incx.eq.1 .and. incy.eq.1) then
          do i = 1,n
@@ -48,9 +45,6 @@
 
       intrinsic abs
 
-      common seps,deps
-100   xn = 0.0d0
-      yn = 0.0d0
       if (n.le.0) return
       if (incx.eq.1 .and. incy.eq.1) then
          do i = 1,n
@@ -87,9 +81,6 @@
 
       intrinsic abs
 
-      common seps,deps
-100   xn = 0.0e0
-      yn = 0.0e0
       if (n.le.0) return
       if (incx.eq.1 .and. incy.eq.1) then
          do i = 1,n
@@ -126,9 +117,6 @@
 
       intrinsic abs
 
-      common seps,deps
-100   xn = 0.0e0
-      yn = 0.0e0
       if (n.le.0) return
       if (incx.eq.1 .and. incy.eq.1) then
          do i = 1,n
