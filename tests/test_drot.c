@@ -7,27 +7,27 @@
 #include <stdint.h>
 #include "/opt/acml5.3.0/gfortran64/include/acml.h"
 
-extern	void	xsrot_(	const int*n, float*f_x, const int*incx, float*f_y, const int* incy, const float* c, const float* s);
+extern	void	xdrot_(	const int*n, double*f_x, const int*incx, double*f_y, const int* incy, const double* c, const double* s);
 
 // Fortran 
-void f_srot(int n, float *x, int incx, float* y, int incy, float c, float s)
+void f_drot(int n, double *x, int incx, double* y, int incy, double c, double s)
 {
-  xsrot_(&n, x, &incx, y, &incy, &c, &s);
+  xdrot_(&n, x, &incx, y, &incy, &c, &s);
 }
 
 int N, incx, incy;
-float c,s; 
-float *x,*x_1,*y, *y_1, *t_x, *t_y;
+double c,s; 
+double *x,*x_1,*y, *y_1, *t_x, *t_y;
 
-float seps = 0.000001;
+double deps = 0.0000000001;
 
 struct timespec begin, end;
 unsigned long long int acml_time()
 {
-  memcpy(x,t_x,sizeof(float)*N);
-  memcpy(y,t_y,sizeof(float)*N);
+  memcpy(x,t_x,sizeof(double)*N);
+  memcpy(y,t_y,sizeof(double)*N);
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  srot(N, x, incx, y, incy, c, s);
+  drot(N, x, incx, y, incy, c, s);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%32lld",time);
@@ -36,10 +36,10 @@ unsigned long long int acml_time()
 
 unsigned long long int f_time()
 {
-  memcpy(x_1,t_x,sizeof(float)*N);
-  memcpy(y_1,t_y,sizeof(float)*N);
+  memcpy(x_1,t_x,sizeof(double)*N);
+  memcpy(y_1,t_y,sizeof(double)*N);
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  f_srot(N, x_1, incx, y_1, incy, c, s);
+  f_drot(N, x_1, incx, y_1, incy, c, s);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%32lld",time);
@@ -51,10 +51,14 @@ int array_cmp()
   int i;
   for(i = 0; i < N; ++i)
   {
-    if(fabs(x[i] - x_1[i]) > seps)
+    if(fabs(x[i] - x_1[i]) > deps)
+    {
       return 0;
-    else if(fabs(y[i] - y_1[i]) > seps)
+    }
+    else if(fabs(y[i] - y_1[i]) > deps)
+    {
       return 0;
+    }
   }
   return 1;
 }
@@ -62,7 +66,7 @@ int array_cmp()
 void run_test()
 {
 
-  printf("Running test for SROT with N = %d, incx = %d, incy = %d, c = %f, s = %f\n", N, incx, incy, c, s);
+  printf("Running test for DROT with N = %d, incx = %d, incy = %d, c = %f, s = %f\n", N, incx, incy, c, s);
   printf("%32s%32s\n","ACML", "FORTRAN");
   printf("Trials\n");
   printf("%32s%32s%32s\n", "Time (ns)", "Time (ns)", "ACML == FT");
@@ -98,12 +102,12 @@ int main(int argc, char *argv[])
 
   c = rand()/1.0/RAND_MAX - 0.5;
   s = rand()/1.0/RAND_MAX - 0.5;
-  x = (float*)malloc(sizeof(float)*N);
-  x_1 = (float*)malloc(sizeof(float)*N);
-  y = (float*)malloc(sizeof(float)*N);
-  y_1 = (float*)malloc(sizeof(float)*N);
-  t_x = (float*)malloc(sizeof(float)*N);
-  t_y = (float*)malloc(sizeof(float)*N);
+  x = (double*)malloc(sizeof(double)*N);
+  x_1 = (double*)malloc(sizeof(double)*N);
+  y = (double*)malloc(sizeof(double)*N);
+  y_1 = (double*)malloc(sizeof(double)*N);
+  t_x = (double*)malloc(sizeof(double)*N);
+  t_y = (double*)malloc(sizeof(double)*N);
 
   int i;
   for (i = 0; i < N; i++)
@@ -117,8 +121,8 @@ int main(int argc, char *argv[])
   run_test();
 
   incx = 2;
-  x = (float*)malloc(sizeof(float)*2*N);
-  x_1 = (float*)malloc(sizeof(float)*2*N);
+  x = (double*)malloc(sizeof(double)*2*N);
+  x_1 = (double*)malloc(sizeof(double)*2*N);
   incy = -1;
   run_test();
 
