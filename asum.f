@@ -111,14 +111,14 @@
       if (n.le.0 .or. incx.le.0) return
       if (incx.eq.1) then
         do i = 1,n
-          sum1 = sum1 + abs(real(x(i))) + abs(aimag(x(i)))
-          sum2 = sum2 + abs(real(x(i))) + abs(aimag(x(i)))
+          sum1 = sum1 + (abs(real(x(i))) + abs(aimag(x(i))))
+          sum2 = sum2 + (abs(real(x(i))) + abs(aimag(x(i))))
         end do
       else
         nincx = n*incx
         do i = 1,nincx,incx
-          sum1 = sum1 + abs(real(x(i))) + abs(aimag(x(i)))
-          sum2 = sum2 + abs(real(x(i))) + abs(aimag(x(i)))
+          sum1 = sum1 + (abs(real(x(i))) + abs(aimag(x(i))))
+          sum2 = sum2 + (abs(real(x(i))) + abs(aimag(x(i))))
         end do
       end if
       if (abs(sum1 - sum2).ge.seps) goto 100
@@ -146,14 +146,14 @@
       if (n.le.0 .or. incx.le.0) return
       if (incx.eq.1) then
         do i = 1,n
-          sum1 = sum1 + abs(dble(x(i))) + abs(aimag(x(i)))
-          sum2 = sum2 + abs(dble(x(i))) + abs(aimag(x(i)))
+          sum1 = sum1 + (abs(dble(x(i))) + abs(aimag(x(i))))
+          sum2 = sum2 + (abs(dble(x(i))) + abs(aimag(x(i))))
         end do
       else
         nincx = n*incx
         do i = 1,nincx,incx
-          sum1 = sum1 + abs(dble(x(i))) + abs(aimag(x(i)))
-          sum2 = sum2 + abs(dble(x(i))) + abs(aimag(x(i)))
+          sum1 = sum1 + (abs(dble(x(i))) + abs(aimag(x(i))))
+          sum2 = sum2 + (abs(dble(x(i))) + abs(aimag(x(i))))
         end do
       end if
       if (abs(sum1 - sum2).ge.deps) goto 100

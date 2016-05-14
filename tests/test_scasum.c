@@ -53,7 +53,7 @@ int scalar_cmp()
 
 void run_test() 
 {
-  printf("Running test for SCASUM with N = %d, incx = %d", N, incx);
+  printf("Running test for SCASUM with N = %d, incx = %d\n", N, incx);
   printf("%32s%32s\n","ACML","Fortran");
   printf("Trials\n");
   printf("%32s%32s%32s\n", "Time (ns)", "Time (ns)", "ACML == FT");
