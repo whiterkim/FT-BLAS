@@ -1,86 +1,120 @@
 #include <time.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdint.h>
 #include "/opt/acml5.3.0/gfortran64/include/acml.h"
-extern int xcsscal_(int*, float, complex*, int*);
 
-int f_csscal(int n, float alpha, complex *x, int incx)
+extern	void	xcsscal_(	const int*n,	const float*alpha,	complex *f_x,			const int*incx);
+
+// Fortran 
+void f_csscal(int n, float alpha, complex *x, int incx)
 {
-  xcsscal_(&n,alpha,x,&incx);
+  xcsscal_(&n,&alpha,x,&incx);
 }
 
-int N;
-complex *x;
+int N, incx;
 float alpha;
-int incx;
+complex *x,*x_1, *t;
+
+float seps = 0.000001;
+double deps = 0.0000000001;
 
 struct timespec begin, end;
-
 unsigned long long int acml_time()
 {
+  memcpy(x,t,sizeof(complex)*N);
   clock_gettime(CLOCK_MONOTONIC, &begin);
   csscal(N,alpha,x,incx);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-  printf("%16lld",time);
+  printf("%32lld",time);
   return time;
 }
 
 unsigned long long int f_time()
 {
+  memcpy(x_1,t,sizeof(complex)*N);
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  f_csscal(N,alpha,x,incx);
+  f_csscal(N,alpha,x_1,incx);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-  printf("%16lld",time);
+  printf("%32lld",time);
   return time;
 }
 
-
-int main(int argc, char** argv) 
+int array_cmp()
 {
-  N = atoi(argv[1]);
-  srand(time(NULL));
-  init_();
-
-  x = (complex*)malloc(sizeof(complex)*N);
-  incx = 1;
-  alpha = 2.0;
-
   int i;
-  for (i = 0; i < N; i++)
+  for(i = 0; i < N; ++i)
   {
-    x[i].real = rand()/1.0/RAND_MAX - 0.5;
-    x[i].imag = rand()/1.0/RAND_MAX - 0.5;
+    if(fabs(x[i].real - x_1[i].real) > seps)
+      return 0;
+    else if(fabs(x[i].imag - x_1[i].imag) > seps)
+      return 0;
   }
+  return 1;
+}
+
+void run_test()
+{
+
+  printf("Running test for CSSCAL with N = %d, incx = %d, alpha = %f\n", N, incx, alpha);
+  printf("%32s%32s\n","ACML", "FORTRAN");
+  printf("Trials\n");
+  printf("%32s%32s%32s\n", "Time (ns)", "Time (ns)", "ACML == FT");
 
   int c = 8, ic, it = 0;
-
-  printf("Running test for CSSCAL with N=%d\n",N);
-  printf("%16s%16s\n","ACML","Fortran");
-  printf("Trials\n");
-  printf("%16s%16s\n","Time (ns)","Time (ns)");
   unsigned long long int tot1 = 0, tot2 = 0;
   for (ic = 0; ic < c; ic++)
   {
     unsigned long long int t1, t2;
     t1 = acml_time();
     t2 = f_time();
-
+    printf("%32d", array_cmp());
     if (ic >= 2)
     {
       tot1 += t1;
       tot2 += t2;
-      ++it;
+      it ++;
     }
-
     printf("\n");
   }
-  printf("Average (Does not include first 2 trials)\n");
-  printf("%16llu%16llu\n",tot1/it,tot2/it);
+
+  printf("Average (Does not include first two trials)\n");
+  printf("%32llu%32llu\n",tot1/it,tot2/it);
+  printf("\n"); 
+}
+
+int main(int argc, char *argv[])
+{
+  init_();    
+  srand(time(NULL));
+
+  N = atoi(argv[1]);
+
+  alpha = rand()/1.0/RAND_MAX - 0.5;
+  x = (complex*)malloc(sizeof(complex)*N);
+  x_1 = (complex*)malloc(sizeof(complex)*N);
+  t = (complex*)malloc(sizeof(complex)*N);
+
+  int i;
+  for (i = 0; i < N; i++)
+  {
+    t[i].real = rand()/1.0/RAND_MAX - 0.5;
+    t[i].imag = rand()/1.0/RAND_MAX - 0.5;
+  }
+
+  incx = 1;
+  run_test();
+
+  incx = 2;
+  run_test();
+
+  incx = -2;
+  run_test();
 
   return 0;
 }
