@@ -55,9 +55,9 @@ int array_cmp()
   int i;
   for (i = 0; i < N; ++i)
   {
-    if (abs(y_1[i].real - y_2[i].real) > deps)
+    if (fabs(y_1[i].real - y_2[i].real) > deps)
       return 0;
-    else if (abs(y_1[i].imag - y_2[i].imag) > deps)
+    else if (fabs(y_1[i].imag - y_2[i].imag) > deps)
       return 0;
   }
   return 1;

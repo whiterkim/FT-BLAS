@@ -55,7 +55,7 @@ int array_cmp()
   int i;
   for (i = 0; i < N; ++i)
   {
-    if (abs(y_1[i] - y_2[i]) > seps)
+    if (fabs(y_1[i] - y_2[i]) > seps)
       return 0;
   }
   return 1;
