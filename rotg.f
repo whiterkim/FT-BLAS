@@ -32,7 +32,7 @@
             z1 = s1
             z2 = s2
          end if
-         if (abs(sb).ge.abs(sa) .and. c.ne.0.0) then
+         if (abs(sb).ge.abs(sa) .and. c1.ne.0.0) then
             z1 = 1.0/c1
             z2 = 1.0/c2
          end if
@@ -82,7 +82,7 @@
             z1 = s1
             z2 = s2
          end if
-         if (dabs(sb).ge.dabs(sa) .and. c.ne.0.0) then
+         if (dabs(sb).ge.dabs(sa) .and. c1.ne.0.0) then
             z1 = 1.0d0/c1
             z2 = 1.0d0/c2
          end if
