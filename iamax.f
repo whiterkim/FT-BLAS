@@ -66,7 +66,7 @@
         do i = 2,n
           if (abs(x(ix)).gt.amax) then
             xidamax = i
-            amax = abs(x(i))
+            amax = abs(x(ix))
           endif
           ix = ix + incx
         end do
@@ -79,10 +79,12 @@
       integer incx, n      
       complex x(*)
       
-      real amax, temp
+      real amax_1, amax_2, temp_1, temp_2
       integer i, ix
       
       intrinsic abs, aimag, real
+
+      common seps,deps
       
       xicamax = 0
       if (n.lt.1 .or. incx.le.0) return
@@ -90,23 +92,31 @@
       if (n.eq.1) return
       
       if (incx.eq.1) then
-        amax = abs(real(x(1))) + abs(aimag(x(1)))
+100     amax_1 = abs(real(x(1))) + abs(aimag(x(1)))
+        amax_2 = abs(real(x(1))) + abs(aimag(x(1)))
+        if (abs(amax_1 - amax_2) > seps) goto 100
         do i = 2,n
-          temp = abs(real(x(i))) + abs(aimag(x(i)))
-          if (temp.gt.amax) then
+200       temp_1 = abs(real(x(i))) + abs(aimag(x(i)))
+          temp_2 = abs(real(x(i))) + abs(aimag(x(i)))
+          if (abs(temp_1 - temp_2) > seps) goto 200
+          if (temp_1.gt.amax_1) then
             xicamax = i
-            amax = temp
+            amax_1 = temp_1
           endif
         end do
       else
         ix = 1
-        amax = abs(real(x(1))) + abs(aimag(x(1)))
+300     amax_1 = abs(real(x(1))) + abs(aimag(x(1)))
+        amax_2 = abs(real(x(1))) + abs(aimag(x(1)))
+        if (abs(amax_1 - amax_2) > seps) goto 300
         ix = ix + incx
         do i = 2,n
-          temp = abs(real(x(i))) + abs(aimag(x(i)))
-          if (temp.gt.amax) then
+400       temp_1 = abs(real(x(ix))) + abs(aimag(x(ix)))
+          temp_2 = abs(real(x(ix))) + abs(aimag(x(ix)))
+          if (abs(temp_1 - temp_2) > seps) goto 400
+          if (temp_1.gt.amax_1) then
             xicamax = i
-            amax = temp
+            amax_1 = temp_1
           endif
           ix = ix + incx
         end do
@@ -119,10 +129,12 @@
       integer incx, n      
       complex*16 x(*)
       
-      double precision amax, temp
+      double precision amax_1, amax_2, temp_1, temp_2
       integer i, ix
       
-      intrinsic abs, dimag, dble
+      intrinsic dabs, aimag, dble
+
+      common seps,deps
       
       xizamax = 0
       if (n.lt.1 .or. incx.le.0) return
@@ -130,23 +142,31 @@
       if (n.eq.1) return
       
       if (incx.eq.1) then
-        amax = abs(dble(x(1))) + abs(dimag(x(1)))
+100     amax_1 = abs(dble(x(1))) + abs(aimag(x(1)))
+        amax_2 = abs(dble(x(1))) + abs(aimag(x(1)))
+        if (abs(amax_1 - amax_2) > seps) goto 100
         do i = 2,n
-          temp = abs(dble(x(i))) + abs(dimag(x(i)))
-          if (temp.gt.amax) then
+200       temp_1 = abs(dble(x(i))) + abs(aimag(x(i)))
+          temp_2 = abs(dble(x(i))) + abs(aimag(x(i)))
+          if (dabs(temp_1 - temp_2) > seps) goto 200
+          if (temp_1.gt.amax_1) then
             xizamax = i
-            amax = temp
+            amax_1 = temp_1
           endif
         end do
       else
         ix = 1
-        amax = abs(dble(x(1))) + abs(dimag(x(1)))
+300     amax_1 = abs(dble(x(1))) + abs(aimag(x(1)))
+        amax_2 = abs(dble(x(1))) + abs(aimag(x(1)))
+        if (abs(amax_1 - amax_2) > seps) goto 300
         ix = ix + incx
         do i = 2,n
-          temp = abs(dble(x(i))) + abs(dimag(x(i)))
-          if (temp.gt.amax) then
+400       temp_1 = abs(dble(x(ix))) + abs(aimag(x(ix)))
+          temp_2 = abs(dble(x(ix))) + abs(aimag(x(ix)))
+          if (abs(temp_1 - temp_2) > seps) goto 400
+          if (temp_1.gt.amax_1) then
             xizamax = i
-            amax = temp
+            amax_1 = temp_1
           endif
           ix = ix + incx
         end do

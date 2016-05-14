@@ -1,53 +1,91 @@
 #include <time.h>
 #include <math.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdint.h>
 #include "/opt/acml5.3.0/gfortran64/include/acml.h"
-extern int xicamax_(int*, complex*, int*);
+
+extern int xicamax_(int *n, complex *x, int *incx);
 
 int f_icamax(int n, complex *x, int incx)
 {
-  register int ans;
-  ans = xicamax_(&n,x,&incx);
-  return ans;
+  return xicamax_(&n,x,&incx);
 }
 
-int N;
+int N, incx;
 complex *x;
-int incx;
+int ans1, ans2;
 
 struct timespec begin, end;
 
 unsigned long long int acml_time()
 {
-  clock_gettime(CLOCK_MONOTONIC, &begin);
-  int ans = icamax(N,x,incx);
-  clock_gettime(CLOCK_MONOTONIC, &end);
+  clock_gettime(CLOCK_MONOTONIC,&begin);
+  ans1 = icamax(N,x,incx);
+  clock_gettime(CLOCK_MONOTONIC,&end);
+
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-  printf("%16d%16lld",ans,time);
+  printf("%32lld",time);
   return time;
 }
+
 
 unsigned long long int f_time()
 {
-  clock_gettime(CLOCK_MONOTONIC, &begin);
-  int ans = f_icamax(N,x,incx);
-  clock_gettime(CLOCK_MONOTONIC, &end);
+  clock_gettime(CLOCK_MONOTONIC,&begin);
+  ans2 = f_icamax(N,x,incx);
+  clock_gettime(CLOCK_MONOTONIC,&end);
+
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-  printf("%16d%16lld",ans,time);
+  printf("%32lld",time);
   return time;
 }
 
-
-int main(int argc, char** argv) 
+int scalar_cmp()
 {
-  N = atoi(argv[1]);
+  return ans1 == ans2;
+}
+
+void run_test() 
+{
+  printf("Running test for ICAMAX with N = %d, incx = %d\n", N, incx);
+  printf("%32s%32s\n","ACML","Fortran");
+  printf("Trials\n");
+  printf("%32s%32s%32s\n", "Time (ns)", "Time (ns)", "ACML == FT");
+
+  int c = 8, it = 0;
+  unsigned long long int tot1 = 0, tot2 = 0;
+
+  int ic;
+  for (ic = 0; ic < c; ic++)
+  {
+    unsigned long long int t1, t2;
+    t1 = acml_time();
+    t2 = f_time();
+    printf("%32d", scalar_cmp());
+    if (ic >= 2)
+    {
+      tot1 += t1;
+      tot2 += t2;
+      ++it;
+    }
+    printf("\n");
+  }
+
+  printf("Average (Does not include first two trials)\n");
+  printf("%32llu%32llu\n",tot1/it,tot2/it);
+  printf("\n");
+}
+
+int main(int argc, char *argv[])
+{
   srand(time(NULL));
   init_();
 
-  incx = 1;
+  N = atoi(argv[1]);
+
   x = (complex*)malloc(sizeof(complex)*N);
 
   int i;
@@ -57,30 +95,20 @@ int main(int argc, char** argv)
     x[i].imag = rand()/1.0/RAND_MAX - 0.5;
   }
 
-  int c = 8, ic, it = 0;
+  incx = 1;
+  run_test();
 
-  printf("Running test for ICAMAX with N=%d\n",N);
-  printf("%32s%32s\n","ACML","Fortran");
-  printf("Trials\n");
-  printf("%16s%16s%16s%16s\n","Result","Time (ns)","Result","Time (ns)");
-  unsigned long long int tot1 = 0, tot2 = 0;
-  for (ic = 0; ic < c; ic++)
+  x = (complex*)malloc(sizeof(complex)*2*N);
+  for (i = 0; i < N; i++)
   {
-    unsigned long long int t1, t2;
-    t1 = acml_time();
-    t2 = f_time();
-
-    if (ic >= 2)
-    {
-      tot1 += t1;
-      tot2 += t2;
-      ++it;
-    }
-
-    printf("\n");
+    x[i].real = rand()/1.0/RAND_MAX - 0.5;
+    x[i].imag = rand()/1.0/RAND_MAX - 0.5;
   }
-  printf("Average (Does not include first 2 trials)\n");
-  printf("%32llu%32llu\n",tot1/it,tot2/it);
+  incx = 2;
+  run_test();
+
+  incx = -2;
+  run_test();
 
   return 0;
 }
