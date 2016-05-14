@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -O3
+CFLAGS = -O3 -g
 LDFLAGS = -lrt
-FC = gfortran
+FC = gfortran -g
 FCFLAGS = -O3
 
 lib=/opt/acml5.3.0/gfortran64/lib/libacml.a
