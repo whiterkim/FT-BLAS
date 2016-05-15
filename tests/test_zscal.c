@@ -7,17 +7,17 @@
 #include <stdint.h>
 #include "/opt/acml5.3.0/gfortran64/include/acml.h"
 
-extern	void	xcsscal_(	const int*n,	const float*alpha,	complex *f_x,			const int*incx);
+extern	void	xzscal_(	const int*n,	const doublecomplex*alpha,	doublecomplex *f_x,			const int*incx);
 
 // Fortran 
-void f_csscal(int n, float alpha, complex *x, int incx)
+void f_zscal(int n, doublecomplex alpha, doublecomplex *x, int incx)
 {
-  xcsscal_(&n,&alpha,x,&incx);
+  xzscal_(&n,&alpha,x,&incx);
 }
 
 int N, incx;
-float alpha;
-complex *x,*x_1, *t;
+doublecomplex alpha;
+doublecomplex *x,*x_1, *t;
 
 float seps = 0.000001;
 double deps = 0.0000000001;
@@ -25,9 +25,9 @@ double deps = 0.0000000001;
 struct timespec begin, end;
 unsigned long long int acml_time()
 {
-  memcpy(x,t,sizeof(complex)*N);
+  memcpy(x,t,sizeof(doublecomplex)*N);
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  csscal(N,alpha,x,incx);
+  zscal(N,&alpha,x,incx);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%32lld",time);
@@ -36,9 +36,9 @@ unsigned long long int acml_time()
 
 unsigned long long int f_time()
 {
-  memcpy(x_1,t,sizeof(complex)*N);
+  memcpy(x_1,t,sizeof(doublecomplex)*N);
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  f_csscal(N,alpha,x_1,incx);
+  f_zscal(N,alpha,x_1,incx);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%32lld",time);
@@ -61,7 +61,7 @@ int array_cmp()
 void run_test()
 {
 
-  printf("Running test for CSSCAL with N = %d, incx = %d, alpha = %f\n", N, incx, alpha);
+  printf("Running test for ZSCAL with N = %d, incx = %d, alpha.real = %f, alpha.imag = %f\n", N, incx, alpha.real, alpha.imag);
   printf("%32s%32s\n","ACML", "FORTRAN");
   printf("Trials\n");
   printf("%32s%32s%32s\n", "Time (ns)", "Time (ns)", "ACML == FT");
@@ -95,10 +95,11 @@ int main(int argc, char *argv[])
 
   N = atoi(argv[1]);
 
-  alpha = rand()/1.0/RAND_MAX - 0.5;
-  x = (complex*)malloc(sizeof(complex)*N);
-  x_1 = (complex*)malloc(sizeof(complex)*N);
-  t = (complex*)malloc(sizeof(complex)*N);
+  alpha.real = rand()/1.0/RAND_MAX - 0.5;
+  alpha.imag = rand()/1.0/RAND_MAX - 0.5;
+  x = (doublecomplex*)malloc(sizeof(doublecomplex)*N);
+  x_1 = (doublecomplex*)malloc(sizeof(doublecomplex)*N);
+  t = (doublecomplex*)malloc(sizeof(doublecomplex)*N);
 
   int i;
   for (i = 0; i < N; i++)
@@ -111,13 +112,13 @@ int main(int argc, char *argv[])
   run_test();
 
   incx = 2;
-  x = (complex*)malloc(sizeof(complex)*2*N);
-  x_1 = (complex*)malloc(sizeof(complex)*2*N);
+  x = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  x_1 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
   run_test();
 
   incx = -2;
-  x = (complex*)malloc(sizeof(complex)*2*N);
-  x_1 = (complex*)malloc(sizeof(complex)*2*N);
+  x = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  x_1 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
   run_test();
 
   return 0;

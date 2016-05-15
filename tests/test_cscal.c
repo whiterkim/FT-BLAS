@@ -112,9 +112,13 @@ int main(int argc, char *argv[])
   run_test();
 
   incx = 2;
+  x = (complex*)malloc(sizeof(complex)*2*N);
+  x_1 = (complex*)malloc(sizeof(complex)*2*N);
   run_test();
 
   incx = -2;
+  x = (complex*)malloc(sizeof(complex)*2*N);
+  x_1 = (complex*)malloc(sizeof(complex)*2*N);
   run_test();
 
   return 0;

@@ -105,9 +105,13 @@ int main(int argc, char *argv[])
   run_test();
 
   incx = 2;
+  x = (double*)malloc(sizeof(double)*2*N);
+  x_1 = (double*)malloc(sizeof(double)*2*N);
   run_test();
 
   incx = -2;
+  x = (double*)malloc(sizeof(double)*2*N);
+  x_1 = (double*)malloc(sizeof(double)*2*N);
   run_test();
 
   return 0;
