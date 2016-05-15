@@ -114,10 +114,18 @@ int main(int argc, char *argv[])
 
   incx = 2;
   incy = 2;
+  x_1 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  x_2 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  y_1 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  y_2 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
   run_test();
 
   incx = -2;
   incy = -2;
+  x_1 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  x_2 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  y_1 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
+  y_2 = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
   run_test();
 
   return 0;
