@@ -13,20 +13,41 @@ void f_drotmg(double *d1, double *d2, double *a, double *b, double *param)
   xdrotmg_(d1, d2, a, b, param);
 }
 
-void acml_test(double d1, double d2, double a, double b, double *param)
+double d11, d21, a1, b1;
+double d12, d22, a2, b2;
+double *param1, *param2;
+
+float seps = 0.000001;
+double deps = 0.0000000001;
+
+void acml_test()
 {
-  drotmg(d1, d2, a, b, param);
-  printf("ACML\n");
-  //printf("%20.10f\n%20.10f\n%20.10f\n%20.10f\n", d1, d2, a, b);
-  printf("%20.10f\n%20.10f\n%20.10f\n%20.10f\n%20.10f\n", param[0], param[1], param[2], param[3], param[4]);
+  drotmg(d11, d21, a1, b1, param1);
 }
 
-void f_test(double d1, double d2, double a, double b, double *param)
+void f_test()
 {
-  f_drotmg(&d1, &d2, &a, &b, param);
-  printf("Fortran\n");
-  //printf("%20.10f\n%20.10f\n%20.10f\n%20.10f\n", d1, d2, a, b);
-  printf("%20.10f\n%20.10f\n%20.10f\n%20.10f\n%20.10f\n", param[0], param[1], param[2], param[3], param[4]);
+  f_drotmg(&d12, &d22, &a2, &b2, param2);
+}
+
+int scalars_cmp()
+{
+  return (fabs(param1[0] - param2[0]) < seps &&
+          fabs(param1[1] - param2[1]) < seps &&
+          fabs(param1[2] - param2[2]) < seps &&
+          fabs(param1[3] - param2[3]) < seps &&
+          fabs(param1[4] - param2[4]) < seps);
+}
+
+int run_test()
+{
+  printf("Running test for DROTMG with d1 = %f, d2 = %f, a = %f and b = %f\n",d11,d21,a1,b1);
+  printf("ACML == Fortran\n");
+  acml_test();
+  f_test();
+  int passed = scalars_cmp();
+  printf("%d\n",passed);
+  return passed;
 }
 
 int main(int argc, char** argv) 
@@ -34,17 +55,48 @@ int main(int argc, char** argv)
   srand(time(NULL));
   init_();
 
-  printf("Running test for DROTMG\n");
+  param1 = (double*)malloc(sizeof(double)*5);
+  param2 = (double*)malloc(sizeof(double)*5);
 
-  double d1, d2, a, b;
-  double param[5];
-  d1 = rand()/1.0/RAND_MAX - 0.5;
-  d2 = rand()/1.0/RAND_MAX - 0.5;
-  a = rand()/1.0/RAND_MAX - 0.5;
-  b = rand()/1.0/RAND_MAX - 0.5;
+  d11 = rand()/1.0/RAND_MAX - 0.5;
+  d21 = rand()/1.0/RAND_MAX - 0.5;
+  a1 = rand()/1.0/RAND_MAX - 0.5;
+  b1 = rand()/1.0/RAND_MAX - 0.5;
 
-  acml_test(d1, d2, a, b, param);
-  f_test(d1, d2, a, b, param);
+  d12 = d11;
+  d22 = d21;
+  a2 = a1;
+  b2 = b1;
+
+  int all_passed = run_test();
+
+  int sz = 5;
+  double arr[5] = {-2.0,-1.0,0.0,1.0,2.0};
+  int i, j, k, l;
+  for (i = 0; i < sz; ++i)
+  {
+    for (j = 0; j < sz; ++j)
+    {
+      for (k = 0; k < sz; ++k)
+      {
+        for (l = 0; l < sz; ++l)
+        {
+          d11 = arr[i];
+          d21 = arr[j];
+          a1 = arr[k]; 
+          b1 = arr[l];
+
+          d12 = d11;
+          d22 = d21;
+          a2 = a1;
+          b2 = b1;
+
+          all_passed &= run_test();
+        }
+      }
+    }
+  }
+  printf("All tests passed?: %d\n", all_passed);
 
   return 0;
 }

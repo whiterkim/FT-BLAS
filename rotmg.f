@@ -6,8 +6,8 @@
 
       real gam,gamsq,one,rgamsq,sflag,sh11,sh12,sh21,sh22,sp1,sp2,sq1,
      $     sq2,stemp,su,two,zero
-      real sp1_2,sp2_2,sq1_2,sq2_2,sh11_2,sh22_2,sh21_2,sh12_2,su_2,d1_2,
-     $     d2_2,a_2
+      real sp1_2,sp2_2,sq1_2,sq2_2,sh11_2,sh22_2,sh21_2,sh12_2,su_2,
+     $     d1_2, d2_2,a_2
 
       intrinsic abs
       common seps,deps
@@ -243,11 +243,11 @@
       double precision sparam(5)
 
       double precision gam,gamsq,one,rgamsq,sflag,sh11,sh12,sh21,sh22,
-     $     sp1,sp2,sq1, sq2,stemp,su,two,zero
+     $                 sp1,sp2,sq1,sq2,stemp,su,two,zero
       double precision sp1_2,sp2_2,sq1_2,sq2_2,sh11_2,sh22_2,sh21_2,
-     $     sh12_2,su_2,d1_2,d2_2,a_2
+     $                 sh12_2,su_2,d1_2, d2_2,a_2
 
-      intrinsic dabs
+      intrinsic abs
       common seps,deps
 
       data zero,one,two/0.e0,1.e0,2.e0/
@@ -268,7 +268,7 @@
 *        case-d1-nonnegative
 10       sp2 = d2*b
          sp2_2 = d2*b
-         if (dabs(sp2 - sp2_2).ge.deps) then
+         if (abs(sp2 - sp2_2).ge.deps) then
             goto 10
          end if
          if (sp2.eq.zero) then
@@ -283,13 +283,13 @@
          sp1_2 = d1*a
          sq2_2 = sp2_2*b
          sq1_2 = sp1_2*a
-         if ((dabs(sp1 - sp1_2).ge.deps).or.
-     $       (dabs(sq1 - sq1_2).ge.deps).or.
-     $       (dabs(sq2 - sq2_2).ge.deps)) then
+         if ((abs(sp1 - sp1_2).ge.deps).or.
+     $       (abs(sq1 - sq1_2).ge.deps).or.
+     $       (abs(sq2 - sq2_2).ge.deps)) then
             goto 20
          end if
 *
-50       if (dabs(sq1).gt.dabs(sq2)) then
+50       if (abs(sq1).gt.abs(sq2)) then
 30          sh21 = -b/a
             sh12 = sp2/sp1
             su = one - sh12*sh21
@@ -298,7 +298,7 @@
             sh12_2 = sp2/sp1
             su_2 = one - sh12_2*sh21_2
 
-           if (dabs(su - su_2).ge.deps) then
+           if (abs(su - su_2).ge.deps) then
               goto 30
            end if
            if (su.gt.zero) then
@@ -339,7 +339,7 @@
                sh22_2 = a/b
                su_2 = one + sh11_2*sh22_2
 
-               if (dabs(su - su_2).ge.deps) then
+               if (abs(su - su_2).ge.deps) then
                   goto 40
                end if
                
@@ -355,7 +355,7 @@
             end if
          end if
 
-         if ((dabs(d1 - d1_2).ge.deps).or.(dabs(d2 - d2_2).ge.deps))then
+         if ((abs(d1 - d1_2).ge.deps).or.(abs(d2 - d2_2).ge.deps)) then
             goto 50
          end if
 
@@ -407,13 +407,13 @@
             enddo
          end if
 
-         if ((dabs(sh11 - sh11_2).ge.deps).or.
-     $       (dabs(sh12 - sh12_2).ge.deps)) then
+         if ((abs(sh11 - sh11_2).ge.deps).or.
+     $       (abs(sh12 - sh12_2).ge.deps)) then
             goto 60
          end if
   
 70       if (d2.ne.zero) then
-            do while ( (dabs(d2).le.rgamsq) .or. (dabs(d2).ge.gamsq) )
+            do while ( (abs(d2).le.rgamsq) .or. (abs(d2).ge.gamsq) )
                if (sflag.eq.zero) then
                   sh11 = one
                   sh22 = one
@@ -431,7 +431,7 @@
 
                   sflag = -one
                end if
-               if (dabs(d2).le.rgamsq) then
+               if (abs(d2).le.rgamsq) then
                   d2 = d2*gam**2
                   sh21 = sh21/gam
                   sh22 = sh22/gam
@@ -451,8 +451,8 @@
             end do
          end if
 
-         if ((dabs(sh21 - sh21_2).ge.deps).or.
-     $       (dabs(sh22 - sh22_2).ge.deps)) then
+         if ((abs(sh21 - sh21_2).ge.deps).or.
+     $       (abs(sh22 - sh22_2).ge.deps)) then
             goto 70
          end if
       end if
