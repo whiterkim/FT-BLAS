@@ -134,28 +134,28 @@ int main(int argc, char *argv[])
   param[0] = -2.0;
   run_test();
 
-  incx = 2;
+  incx = -2;
   x = (float*)malloc(sizeof(float)*2*N);
   x_1 = (float*)malloc(sizeof(float)*2*N);
   incy = -1;
   param[0] = -1.0;
   run_test();
 
-  incx = 2;
+  incx = -2;
   x = (float*)malloc(sizeof(float)*2*N);
   x_1 = (float*)malloc(sizeof(float)*2*N);
   incy = -1;
   param[0] = 0.0;
   run_test();
 
-  incx = 2;
+  incx = -2;
   x = (float*)malloc(sizeof(float)*2*N);
   x_1 = (float*)malloc(sizeof(float)*2*N);
   incy = -1;
   param[0] = 1.0;
   run_test();
 
-  incx = 2;
+  incx = -2;
   x = (float*)malloc(sizeof(float)*2*N);
   x_1 = (float*)malloc(sizeof(float)*2*N);
   incy = -1;
