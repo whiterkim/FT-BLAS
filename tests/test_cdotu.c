@@ -105,6 +105,8 @@ int main(int argc, char** argv)
   incy = 1;
   run_test();
 
+  free(x);
+  free(y);
   x = (complex*)malloc(sizeof(complex)*2*N);
   y = (complex*)malloc(sizeof(complex)*2*N);
   for (i = 0; i < N; i++)
@@ -123,5 +125,7 @@ int main(int argc, char** argv)
   incy = -2;
   run_test();
 
+  free(x);
+  free(y);
   return 0;
 }

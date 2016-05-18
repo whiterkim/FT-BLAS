@@ -96,6 +96,7 @@ int main(int argc, char** argv)
   incx = 1;
   run_test();
 
+  free(x);
   x = (doublecomplex*)malloc(sizeof(doublecomplex)*2*N);
   for (i = 0; i < N; i++)
   {
@@ -109,5 +110,6 @@ int main(int argc, char** argv)
   incx = -2;
   run_test();
 
+  free(x);
   return 0;
 }

@@ -100,6 +100,8 @@ int main(int argc, char** argv)
   incy = 1;
   run_test();
 
+  free(x);
+  free(y);
   x = (double*)malloc(sizeof(double)*2*N);
   y = (double*)malloc(sizeof(double)*2*N);
   for (i = 0; i < 2*N; i++)
@@ -115,6 +117,7 @@ int main(int argc, char** argv)
   incy = -2;
   run_test();
 
-
+  free(x);
+  free(y);
   return 0;
 }

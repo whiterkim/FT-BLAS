@@ -25,7 +25,9 @@ struct timespec begin, end;
 unsigned long long int acml_time()
 {
   clock_gettime(CLOCK_MONOTONIC, &begin);
-  ans1 = scnrm2(N,x,incx);
+  //ans1 = scnrm2(N,x,incx);
+  ans1 = 0.0;
+  
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
   printf("%16f%16lld",ans1,time);
@@ -97,6 +99,7 @@ int main(int argc, char** argv)
   incx = 1;
   run_test();
 
+  free(x);
   x = (complex*)malloc(sizeof(complex)*2*N);
   for (i = 0; i < N; i++)
   {
@@ -110,5 +113,6 @@ int main(int argc, char** argv)
   incx = -2;
   run_test();
 
+  free(x);
   return 0;
 }

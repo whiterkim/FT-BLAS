@@ -102,6 +102,8 @@ int main(int argc, char** argv)
   incy = 1;
   run_test();
 
+  free(x);
+  free(y);
   x = (float*)malloc(sizeof(float)*2*N);
   y = (float*)malloc(sizeof(float)*2*N);
   for (i = 0; i < 2*N; i++)
@@ -117,6 +119,7 @@ int main(int argc, char** argv)
   incy = -2;
   run_test();
 
-
+  free(x);
+  free(y);
   return 0;
 }

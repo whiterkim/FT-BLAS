@@ -101,9 +101,10 @@ int main(int argc, char** argv)
   incy = 1;
   run_test();
 
+  free(x);
+  free(y);
   x = (float*)malloc(sizeof(float)*2*N);
   y = (float*)malloc(sizeof(float)*2*N);
-
   for (i = 0; i < N; i++)
   {
     x[i] = rand()/1.0/RAND_MAX - 0.5;
@@ -118,5 +119,7 @@ int main(int argc, char** argv)
   incy = -2;
   run_test();
 
+  free(x);
+  free(y);
   return 0;
 }
