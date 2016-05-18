@@ -28,7 +28,7 @@ unsigned long long int acml_time()
   ans1 = dznrm2(N,x,incx);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-  printf("%16f%16lld",ans,time);
+  printf("%16f%16lld",ans1,time);
   return time;
 }
 
@@ -38,7 +38,7 @@ unsigned long long int f_time()
   ans2 = f_dznrm2(N,x,incx);
   clock_gettime(CLOCK_MONOTONIC, &end);
   unsigned long long int time = 1000000000L*(end.tv_sec - begin.tv_sec) + end.tv_nsec - begin.tv_nsec;
-  printf("%16f%16lld",ans,time);
+  printf("%16f%16lld",ans2,time);
   return time;
 }
 
