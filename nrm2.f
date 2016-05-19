@@ -130,7 +130,7 @@
             if (REAL(x(ix)).ne.zero) then
                temp = abs(REAL(x(ix)))
                if (scle.lt.temp) then
-                  ssq1 = one + ssq* (scle/temp)**2
+                  ssq1 = one + ssq1* (scle/temp)**2
                   ssq2 = one + ssq2* (scle/temp)**2
                   scle = temp
                else
